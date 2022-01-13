@@ -58,6 +58,7 @@ LRU<T, hash>::LRU()
 {
     head_->next = tail_;
     tail_->pre = head_;
+    head_->pre = tail_->next = nullptr;
 }
 
 template <typename T, typename hash>
@@ -75,6 +76,8 @@ LRU<T, hash>::~LRU()
 template <typename T, typename hash>
 void LRU<T, hash>::visit(T &t)
 {
+    if (eleToNode_.find(t) == eleToNode_.end())
+        return;
     ListNode* node = eleToNode_[t];
     removeNodeFromList(node);
     addToListHead(node);

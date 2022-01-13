@@ -21,6 +21,12 @@ PF_FileHandle::PF_FileHandle()
 {
 }
 
+PF_FileHandle::~PF_FileHandle(){
+    ForcePages(ALL_PAGES);
+    if (isHeadChange_)
+        ForceHeader();
+}
+
 RC PF_FileHandle::GetFirstPage(PF_PageHandle& pageHandle) const
 {
     return GetNextPage(-1, pageHandle);

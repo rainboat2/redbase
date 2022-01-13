@@ -27,5 +27,5 @@ void PF_PrintError(RC rc)
         { RC::PF_INVALIDNAME, "invalid file name!"},
         { RC::PF_UNIX, "Unix error!"}
     };
-    std::cout << m[rc] << std::endl;
+    std::cerr << m[rc] << std::endl;
 }

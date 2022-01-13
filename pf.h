@@ -2,7 +2,7 @@
 #define PF_HH
 
 #include "PF_Internal.h"
-#include "PF_BufferManger.h"
+#include "PF_BufferManager.h"
 
 void PF_PrintError(RC rc);
 

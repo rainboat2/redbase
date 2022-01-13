@@ -60,7 +60,7 @@ $(OBJECTS): %.o:
 
 .PHONY: clean print run_test
 clean:
-	rm redbase tester $(BUILD_DIR)/*.d  $(BUILD_DIR)/*.o lib/*.a
+	rm bin/* $(BUILD_DIR)/*.d  $(BUILD_DIR)/*.o lib/*.a
 print:
 	echo $(OBJECTS)
 run_test: $(TESTERS)

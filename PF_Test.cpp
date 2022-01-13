@@ -1,8 +1,11 @@
 #include "PF_BufferManager.h"
 #include "PF_BufferStrategy.h"
+#include "pf.h"
 #include "gtest/gtest.h"
 #include <array>
+#include <fcntl.h>
 #include <iostream>
+#include <unistd.h>
 
 class LRUTest : public testing::Test {
 protected:
@@ -63,9 +66,64 @@ TEST_F(LRUTest, LRU_CONTAIN_REMOVE_TEST)
     EXPECT_TRUE(LRU_->empty());
 }
 
-class BufferManagerTest : public testing::Test {
+class PF_ManagerTest : public testing::Test {
+protected:
     void SetUp() override
     {
-        
+    }
+
+    void TearDown() override
+    {
+    }
+
+protected:
+    PF_Manager manager_;
+    const char* TEST_FILE = "/tmp/PF_CREATE_TEST";
+};
+
+TEST_F(PF_ManagerTest, PF_MANAGER_FILE_MANAGER)
+{
+    RC rc = manager_.CreateFile(TEST_FILE);
+    if (rc != RC::PF_SUCCESSS)
+        PF_PrintError(rc);
+    EXPECT_EQ(rc, RC::PF_SUCCESSS);
+    EXPECT_EQ(0, access(TEST_FILE, AT_EACCESS));
+    
+    PF_FileHandle handle;
+    EXPECT_EQ(RC::PF_SUCCESSS, manager_.OpenFile(TEST_FILE, handle));
+    EXPECT_EQ(RC::PF_SUCCESSS, manager_.CloseFile(handle));
+
+    rc = manager_.DestroyFile(TEST_FILE);
+    if (rc != RC::PF_SUCCESSS)
+        PF_PrintError(rc);
+    EXPECT_EQ(rc, RC::PF_SUCCESSS);
+    EXPECT_EQ(-1, access(TEST_FILE, AT_EACCESS));
+}
+
+TEST_F(PF_ManagerTest, PF_MANAGER_BLOCK)
+{
+    char* buffers[PF_BUFFER_SIZE];
+
+    // allocateBlock and disposeBlock for many times
+    for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < PF_BUFFER_SIZE; i++) {
+            EXPECT_EQ(RC::PF_SUCCESSS, manager_.AllocateBlock(buffers[i]));
+        }
+        char* overflow;
+        EXPECT_EQ(RC::PF_NOBUF, manager_.AllocateBlock(overflow));
+        EXPECT_EQ(RC::PF_NOBUF, manager_.AllocateBlock(overflow));
+
+        // try to access buffer, it may fail if the buffer memory invalid
+        for (int i = 0; i < PF_BUFFER_SIZE; i++) {
+            char* buffer = buffers[i];
+            for (int j = 0; j < PF_FILE_BLOCK_SIZE; j++) {
+                buffer[j] = j;
+            }
+        }
+
+        for (int i = 0; i < PF_BUFFER_SIZE; i++) {
+            EXPECT_EQ(RC::PF_SUCCESSS, manager_.DisposeBlock(buffers[i]));
+            buffers[i] = nullptr;
+        }
     }
 }

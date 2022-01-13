@@ -1,5 +1,5 @@
 #include "pf.h"
-#include "PF_BufferManger.h"
+#include "PF_BufferManager.h"
 #include "PF_BufferStrategy.h"
 
 #include <unordered_map>

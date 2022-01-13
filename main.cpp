@@ -1,4 +1,6 @@
 #include "pf.h"
+#include "PF_BufferManger.h"
+#include "PF_BufferStrategy.h"
 
 #include <unordered_map>
 #include <iostream>
@@ -15,7 +17,9 @@
 // };
 
 int main(){
-    PF_PageHandle pp;
-    PF_PrintError(RC::PF_SUCCESSS);
+    BufferStrategy<BufferKey>* LRU_ = new LRU<BufferKey, BufferKeyHash>();
+    BufferKey b1{1, 2}, b2{234434, 0}, b3{2323, 4546};
+    LRU_->push(b1);
+    delete LRU_;
     return 0;
 }

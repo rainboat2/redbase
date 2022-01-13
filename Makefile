@@ -63,5 +63,5 @@ clean:
 	rm redbase tester $(BUILD_DIR)/*.d  $(BUILD_DIR)/*.o lib/*.a
 print:
 	echo $(OBJECTS)
-run_test:
-	./PF_Test
+run_test: $(TESTERS)
+	bin/PF_Test

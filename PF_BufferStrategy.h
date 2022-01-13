@@ -63,12 +63,13 @@ LRU<T, hash>::LRU()
 template <typename T, typename hash>
 LRU<T, hash>::~LRU()
 {
-    ListNode* dummy = head_;
-    while (dummy != nullptr) {
-        ListNode* tmp = dummy;
-        dummy = dummy->next;
-        delete tmp;
+    for (auto it = eleToNode_.begin(); it != eleToNode_.end();){
+        ListNode *node = it->second;
+        it = eleToNode_.erase(it);
+        delete node;
     }
+    delete head_;
+    delete tail_;
 }
 
 template <typename T, typename hash>

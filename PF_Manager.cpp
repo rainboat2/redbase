@@ -25,6 +25,7 @@ RC PF_Manager::CreateFile(const char* filename)
 
     // header虽然不大，但使用一个Block大小来存储header
     char buffer[PF_FILE_HEADER_SIZE];
+    memset(buffer, 0, PF_FILE_BLOCK_SIZE);
     PF_FileHeader* header = (PF_FileHeader*)buffer;
     header->nextFree = -1;
     header->pageNum = 0;

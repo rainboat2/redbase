@@ -17,9 +17,21 @@
 // };
 
 int main(){
-    BufferStrategy<BufferKey>* LRU_ = new LRU<BufferKey, BufferKeyHash>();
-    BufferKey b1{1, 2}, b2{234434, 0}, b3{2323, 4546};
-    LRU_->push(b1);
-    delete LRU_;
+    const char* file = "/tmp/test";
+    PF_Manager manger;
+    PF_FileHandle fileHandle;
+    manger.CreateFile("/tmp/test");
+    manger.OpenFile("/tmp/test", fileHandle);
+    PF_PageHandle pageHandle;
+    fileHandle.AllocatePage(pageHandle);
+
+    char *data;
+    PageNum pageNum;
+    pageHandle.GetData(data);
+    pageHandle.GetPageNum(pageNum);
+    memset(data, 'a', PF_PAGE_SIZE);
+    fileHandle.MarkDirty(pageNum);
+    fileHandle.UnpinPage(pageNum);
     return 0;
 }
+

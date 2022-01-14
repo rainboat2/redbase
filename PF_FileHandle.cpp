@@ -8,7 +8,7 @@
     }
 
 #define RETURN_CODE_IF_PAGE_NUM_INVALID(pageNum)    \
-    if (pageNum < 0 || pageNum > header_.pageNum) { \
+    if (pageNum < 0 || pageNum >= header_.pageNum) { \
         return RC::PF_EOF;                          \
     }
 
@@ -25,6 +25,7 @@ PF_FileHandle::~PF_FileHandle(){
     ForcePages(ALL_PAGES);
     if (isHeadChange_)
         ForceHeader();
+    
 }
 
 RC PF_FileHandle::GetFirstPage(PF_PageHandle& pageHandle) const
@@ -84,23 +85,24 @@ RC PF_FileHandle::AllocatePage(PF_PageHandle& pageHandle)
     PageNum pageNum;
 
     // 获取空闲的page
-    if (header_.nextFree == PageStatus::LIST_END) {
+    if (header_.nextFree != PageStatus::LIST_END) {
+        pageNum = header_.nextFree;
+    } else {
         RETURN_CODE_IF_NOT_SUCCESS(appendFileBlockToEnd());
         pageNum = header_.pageNum - 1;
-    } else {
-        pageNum = header_.nextFree;
     }
 
     char* data;
     RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, pageNum, data));
 
-    pageHandle.data_ = data + sizeof(PF_PageHandle);
+    pageHandle.data_ = data + sizeof(PF_PageHeader);
     pageHandle.pageNum_ = pageNum;
 
     if (header_.nextFree != PageStatus::LIST_END) {
         PF_PageHeader* h = (PF_PageHeader*)data;
         header_.nextFree = h->nextFree;
         isHeadChange_ = true;
+        h->nextFree = PageStatus::USED;
     }
     return RC::PF_SUCCESSS;
 }
@@ -175,14 +177,10 @@ RC PF_FileHandle::appendFileBlockToEnd()
 RC PF_FileHandle::ForceHeader()
 {
     if (isHeadChange_) {
-        char buffer[PF_FILE_BLOCK_SIZE];
-        PF_FileHeader* h = (PF_FileHeader*)buffer;
-        h->nextFree = header_.nextFree;
-        h->pageNum = header_.pageNum;
         PF_UNIX_RETURN_IF_ERROR(lseek(fd_, 0, SEEK_SET));
-        int num = write(fd_, buffer, PF_FILE_BLOCK_SIZE);
+        int num = write(fd_, &header_, sizeof(PF_FileHeader));
         PF_UNIX_RETURN_IF_ERROR(num);
-        if (num < PF_FILE_BLOCK_SIZE)
+        if (num < sizeof(PF_FileHeader))
             return RC::PF_INCOMPLETEWRITE;
         isHeadChange_ = false;
     }

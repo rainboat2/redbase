@@ -78,8 +78,10 @@ RC PF_BufferManager::UnpinPage(int fd, PageNum pageNum)
     RETURN_ERROR_IF_NOT_PIN(key);
     auto desc = fileAllocated_[key];
     desc->pinCount--;
-    if (desc->pinCount == 0)
+    if (desc->pinCount == 0){
+        ForcePage(fd, pageNum);
         unpinDispatcher_->push(key);
+    }
     return RC::PF_SUCCESSS;
 }
 

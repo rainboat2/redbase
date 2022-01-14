@@ -5,7 +5,9 @@
 #include <array>
 #include <fcntl.h>
 #include <iostream>
+#include <stack>
 #include <unistd.h>
+#include <stdlib.h>
 
 class LRUTest : public testing::Test {
 protected:
@@ -148,10 +150,67 @@ protected:
     const char* TEST_FILE_ = "/tmp/PF_FILE_HANDLE_TEST";
 };
 
-TEST_F(PF_FileHandleTest, PAGE_MANIPULATE){
+TEST_F(PF_FileHandleTest, PAGE_ALLOCAGE_AND_DISPOSE)
+{
+    for (int i = 0; i < 2; i++) {
+        PF_PageHandle pageHandle;
+        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+        PageNum pageNum;
+        pageHandle.GetPageNum(pageNum);
+        EXPECT_EQ(0, pageNum);
+        EXPECT_EQ(RC::PF_SUCCESSS, handle_.DisposePage(pageNum));
+    }
+
+    for (int i = 0; i < PF_BUFFER_SIZE; i++) {
+        PF_PageHandle pageHandle;
+        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+    }
+
+    std::vector<int> delete_seq { 0, 39, 1, 38 };
+    std::stack<int> free_page;
+    for (auto d : delete_seq) {
+        handle_.DisposePage(d);
+        free_page.push(d);
+    }
+
+    for (int i = 0; i < 4; i++) {
+        PF_PageHandle pageHandle;
+        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+        PageNum pageNum;
+        pageHandle.GetPageNum(pageNum);
+        EXPECT_EQ(pageNum, free_page.top());
+        free_page.pop();
+    }
+    for (int i = 0; i < PF_BUFFER_SIZE; i++){
+        handle_.UnpinPage(i);
+    }
+
+    {
+        PF_PageHandle pageHandle;
+        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+        PageNum pageNum;
+        pageHandle.GetPageNum(pageNum);
+        EXPECT_EQ(40, PF_BUFFER_SIZE);
+    }
+}
+
+TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST){
     PF_PageHandle pageHandle;
-    EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
     PageNum pageNum;
+    char *data;
+    for (int i = 0; i < PF_BUFFER_SIZE; i++) {
+        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+        pageHandle.GetPageNum(pageNum);
+        pageHandle.GetData(data);
+        memset(data, 'a' + i, PF_PAGE_SIZE);
+        handle_.MarkDirty(pageNum);
+        handle_.UnpinPage(pageNum);
+    }
+    // system("xxd /tmp/PF_FILE_HANDLE_TEST > tmp.txt");
+
+    handle_.GetFirstPage(pageHandle);
     pageHandle.GetPageNum(pageNum);
-    EXPECT_EQ(0, pageNum);
+    pageHandle.GetData(data);
+    EXPECT_EQ('a', data[0]);
+    
 }

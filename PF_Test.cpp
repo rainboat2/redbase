@@ -6,8 +6,8 @@
 #include <fcntl.h>
 #include <iostream>
 #include <stack>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 class LRUTest : public testing::Test {
 protected:
@@ -181,7 +181,7 @@ TEST_F(PF_FileHandleTest, PAGE_ALLOCAGE_AND_DISPOSE)
         EXPECT_EQ(pageNum, free_page.top());
         free_page.pop();
     }
-    for (int i = 0; i < PF_BUFFER_SIZE; i++){
+    for (int i = 0; i < PF_BUFFER_SIZE; i++) {
         handle_.UnpinPage(i);
     }
 
@@ -194,23 +194,57 @@ TEST_F(PF_FileHandleTest, PAGE_ALLOCAGE_AND_DISPOSE)
     }
 }
 
-TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST){
-    PF_PageHandle pageHandle;
-    PageNum pageNum;
-    char *data;
+TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST)
+{
     for (int i = 0; i < PF_BUFFER_SIZE; i++) {
+        PF_PageHandle pageHandle;
+        PageNum pageNum;
+        char* data;
         EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
         pageHandle.GetPageNum(pageNum);
         pageHandle.GetData(data);
-        memset(data, 'a' + i, PF_PAGE_SIZE);
+        memset(data, i, PF_PAGE_SIZE);
         handle_.MarkDirty(pageNum);
         handle_.UnpinPage(pageNum);
     }
     // system("xxd /tmp/PF_FILE_HANDLE_TEST > tmp.txt");
 
-    handle_.GetFirstPage(pageHandle);
-    pageHandle.GetPageNum(pageNum);
-    pageHandle.GetData(data);
-    EXPECT_EQ('a', data[0]);
-    
+    {
+        PF_PageHandle pageHandle;
+        PageNum pageNum;
+        char* data;
+        handle_.GetFirstPage(pageHandle);
+        pageHandle.GetPageNum(pageNum);
+        pageHandle.GetData(data);
+        for (int i = 0; i < PF_PAGE_SIZE; i++)
+            EXPECT_EQ(0, data[i]);
+
+        for (int i = 1; i < PF_BUFFER_SIZE; i++) {
+            EXPECT_EQ(RC::PF_SUCCESSS, handle_.GetNextPage(pageNum, pageHandle));
+            pageHandle.GetPageNum(pageNum);
+            pageHandle.GetData(data);
+            for (int j = 0; j < PF_PAGE_SIZE; j++)
+                EXPECT_EQ(i, data[j]);
+        }
+         EXPECT_EQ(RC::PF_EOF, handle_.GetNextPage(pageNum, pageHandle));
+    }
+
+    {
+        PF_PageHandle pageHandle;
+        PageNum pageNum;
+        char* data;
+        handle_.GetLastPage(pageHandle);
+        pageHandle.GetPageNum(pageNum);
+        pageHandle.GetData(data);
+        for (int i = PF_PAGE_SIZE - 1; i >= 0; i--)
+            EXPECT_EQ(PF_BUFFER_SIZE - 1, data[i]);
+
+        for (int i = PF_BUFFER_SIZE - 2; i >= 0; i--) {
+            EXPECT_EQ(RC::PF_SUCCESSS, handle_.GetPrevPage(pageNum, pageHandle));
+            pageHandle.GetPageNum(pageNum);
+            pageHandle.GetData(data);
+            for (int j = 0; j < PF_PAGE_SIZE; j++)
+                EXPECT_EQ(i, data[j]);
+        }
+    }
 }

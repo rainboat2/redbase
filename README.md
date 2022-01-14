@@ -19,6 +19,6 @@ brew install googletest
 in workspace folder, run:
 
 ```shell
-mk dir build bin lib
+mkdir build bin lib
 make
 ```

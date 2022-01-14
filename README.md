@@ -4,11 +4,11 @@
 
 it's a project of stanford class [CS346](https://web.stanford.edu/class/cs346/2015/)
 
-## dependencies
+## Dependencies
 
 this project depend on googletest. you can install it by running the follow command;
 
-### macos
+### macOS
  
 ```shell
 brew install googletest

@@ -14,11 +14,18 @@ this project depend on googletest. you can install it by running the follow comm
 brew install googletest
 ```
 
-### Build project
+## Build project
 
-in workspace folder, run:
+in workspace folder, run the following command to generate executable file `bin/redbase`
 
 ```shell
 mkdir build bin lib
 make
+```
+
+## Test
+
+run the following command to run testcase of this project.
+```shell
+make run_test
 ```

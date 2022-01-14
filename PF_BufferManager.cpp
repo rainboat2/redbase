@@ -3,11 +3,11 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-#define RETURN_ERROR_IF_NOT_PIN(key)            \
+#define RETURN_ERROR_IF_NOT_PIN(key)                        \
     if (fileAllocated_.find(key) == fileAllocated_.end()) { \
-        return RC::PF_PAGENOTINBUF;               \
-    } else if (unpinDispatcher_->contain(key)) {  \
-        return RC::PF_PAGEUNPINNED;               \
+        return RC::PF_PAGENOTINBUF;                         \
+    } else if (unpinDispatcher_->contain(key)) {            \
+        return RC::PF_PAGEUNPINNED;                         \
     }
 
 PF_BufferManager::PF_BufferManager()
@@ -41,11 +41,7 @@ RC PF_BufferManager::ReadPage(int fd, PageNum pageNum, char*& data)
 
         // 读取page数据
         char* buffer = buffer_pool_[bufferIndex];
-        PF_UNIX_RETURN_IF_ERROR(lseek(fd, PF_PAGE_OFFSET(pageNum), SEEK_SET));
-        int num = read(fd, buffer, PF_FILE_BLOCK_SIZE);
-        PF_UNIX_RETURN_IF_ERROR(num);
-        if (num < PF_FILE_BLOCK_SIZE)
-            return RC::PF_INCOMPLETEREAD;
+        RETURN_CODE_IF_NOT_SUCCESS(ReadPageFromFile(fd, pageNum, buffer));
     }
 
     auto desc = fileAllocated_[key];
@@ -70,19 +66,15 @@ RC PF_BufferManager::ForcePage(int fd, PageNum pageNum)
     auto desc = fileAllocated_[key];
     if (desc->isDirty) {
         char* data = buffer_pool_[desc->bufferIndex];
-        PF_UNIX_RETURN_IF_ERROR(lseek(fd, PF_PAGE_OFFSET(pageNum), SEEK_SET));
-        int num = write(fd, data, PF_FILE_BLOCK_SIZE);
-        PF_UNIX_RETURN_IF_ERROR(num);
-        if (num < PF_FILE_BLOCK_SIZE)
-            return RC::PF_INCOMPLETEWRITE;
+        WritePageToFile(fd, pageNum, data);
         desc->isDirty = false;
     }
     return RC::PF_SUCCESSS;
 }
 
-
-RC PF_BufferManager::UnpinPage(int fd, PageNum pageNum){
-    BufferKey key {fd, pageNum};
+RC PF_BufferManager::UnpinPage(int fd, PageNum pageNum)
+{
+    BufferKey key { fd, pageNum };
     RETURN_ERROR_IF_NOT_PIN(key);
     auto desc = fileAllocated_[key];
     desc->pinCount--;
@@ -91,7 +83,8 @@ RC PF_BufferManager::UnpinPage(int fd, PageNum pageNum){
     return RC::PF_SUCCESSS;
 }
 
-RC PF_BufferManager::AllocateBlock(char *&data){
+RC PF_BufferManager::AllocateBlock(char*& data)
+{
     int bufferIndex = getFreeBuffer();
     if (bufferIndex < 0)
         return RC::PF_NOBUF;
@@ -100,7 +93,8 @@ RC PF_BufferManager::AllocateBlock(char *&data){
     return RC::PF_SUCCESSS;
 }
 
-RC PF_BufferManager::DisposeBlock(char *&data){
+RC PF_BufferManager::DisposeBlock(char*& data)
+{
     if (scratchAllocated_.find(data) == scratchAllocated_.end())
         return RC::PF_PAGENOTINBUF;
     int bufferIndex = scratchAllocated_[data];
@@ -112,7 +106,7 @@ RC PF_BufferManager::DisposeBlock(char *&data){
 void PF_BufferManager::pinPage(BufferKey& key)
 {
     auto desc = fileAllocated_[key];
-    if (desc->pinCount == 0) {
+    if (desc->pinCount == 0 && unpinDispatcher_->contain(key)) {
         unpinDispatcher_->remove(key);
     }
     desc->pinCount++;
@@ -133,4 +127,24 @@ int PF_BufferManager::getFreeBuffer()
         fileAllocated_.erase(key);
     }
     return rs;
+}
+
+RC PF_BufferManager::ReadPageFromFile(int fd, PageNum pageNum, char*& data)
+{
+    PF_UNIX_RETURN_IF_ERROR(lseek(fd, PF_PAGE_OFFSET(pageNum), SEEK_SET));
+    int num = read(fd, data, PF_FILE_BLOCK_SIZE);
+    PF_UNIX_RETURN_IF_ERROR(num);
+    if (num < PF_FILE_BLOCK_SIZE)
+        return RC::PF_INCOMPLETEREAD;
+    return RC::PF_SUCCESSS;
+}
+
+RC PF_BufferManager::WritePageToFile(int fd, PageNum pageNum, char* data)
+{
+    PF_UNIX_RETURN_IF_ERROR(lseek(fd, PF_PAGE_OFFSET(pageNum), SEEK_SET));
+    int num = write(fd, data, PF_FILE_BLOCK_SIZE);
+    PF_UNIX_RETURN_IF_ERROR(num);
+    if (num < PF_FILE_BLOCK_SIZE)
+        return RC::PF_INCOMPLETEWRITE;
+    return RC::PF_SUCCESSS;
 }

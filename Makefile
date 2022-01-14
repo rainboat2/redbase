@@ -33,7 +33,7 @@ all: redbase $(TESTERS)
 redbase: $(OBJECTS) $(LIBS)
 	$(CC) $(CPPFLAGS) $(LDFLAGS) $(BUILD_DIR)/main.o -L $(LIB_DIR) $(LIBS_FLAGS) -o $(TARGET_DIR)/$@
 
-$(TESTERS): % : $(BUILD_DIR)/%.o 
+$(TESTERS): % : $(BUILD_DIR)/%.o ${LIBS}
 	$(CC) $(CPPFLAGS) $(LDFLAGS) $< -L $(LIB_DIR) $(LIBS_FLAGS) -o $(TARGET_DIR)/$@
 
 # generate library file

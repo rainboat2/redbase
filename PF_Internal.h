@@ -13,6 +13,7 @@ using PageNum = int32_t;
 #define PF_FILE_BLOCK_SIZE (PF_PAGE_SIZE + 4)
 #define PF_BUFFER_SIZE 40
 #define PF_FILE_HEADER_SIZE 4096
+#define PF_PAGE_OFFSET(pageNum) (pageNum * PF_FILE_BLOCK_SIZE + PF_FILE_HEADER_SIZE)
 
 enum PageStatus : int {
     LIST_END = -1,
@@ -65,11 +66,11 @@ enum class RC {
         }                                                     \
     }
 
-#define RETURN_CODE_IF_NOT_SUCCESS(rc) \
-    {                                  \
-        if (rc != RC::PF_SUCCESSS)     \
-            return rc;                 \
+#define RETURN_CODE_IF_NOT_SUCCESS(pf_call_or_rc) \
+    {                                       \
+        RC rc = pf_call_or_rc;                    \
+        if (rc != RC::PF_SUCCESSS)          \
+            return rc;                      \
     }
 
-#define PF_PAGE_OFFSET(pageNum) (pageNum * PF_FILE_BLOCK_SIZE + PF_FILE_HEADER_SIZE)
 #endif

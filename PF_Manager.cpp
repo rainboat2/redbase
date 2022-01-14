@@ -27,7 +27,7 @@ RC PF_Manager::CreateFile(const char* filename)
     char buffer[PF_FILE_HEADER_SIZE];
     PF_FileHeader* header = (PF_FileHeader*)buffer;
     header->nextFree = -1;
-    header->pageNum = 1;
+    header->pageNum = 0;
 
     auto num = write(fd, header, PF_FILE_HEADER_SIZE);
     PF_UNIX_RETURN_IF_ERROR(num);

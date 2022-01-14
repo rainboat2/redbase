@@ -92,7 +92,7 @@ RC PF_FileHandle::AllocatePage(PF_PageHandle& pageHandle)
     }
 
     char* data;
-    RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, header_.pageNum, data));
+    RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, pageNum, data));
 
     pageHandle.data_ = data + sizeof(PF_PageHandle);
     pageHandle.pageNum_ = pageNum;

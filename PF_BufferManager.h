@@ -58,6 +58,8 @@ public:
 private:
     int getFreeBuffer();
     void pinPage(BufferKey &key);
+    RC ReadPageFromFile(int fd, PageNum pageNum, char *&data);
+    RC WritePageToFile(int fd, PageNum pageNum, char *data);
 
 private:
     char* buffer_pool_[PF_BUFFER_SIZE];

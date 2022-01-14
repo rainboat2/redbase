@@ -78,26 +78,26 @@ protected:
 
 protected:
     PF_Manager manager_;
-    const char* TEST_FILE = "/tmp/PF_CREATE_TEST";
+    const char* TEST_FILE_ = "/tmp/PF_MANAGER_TEST";
 };
 
 TEST_F(PF_ManagerTest, PF_MANAGER_FILE_MANAGER)
 {
-    RC rc = manager_.CreateFile(TEST_FILE);
+    RC rc = manager_.CreateFile(TEST_FILE_);
     if (rc != RC::PF_SUCCESSS)
         PF_PrintError(rc);
     EXPECT_EQ(rc, RC::PF_SUCCESSS);
-    EXPECT_EQ(0, access(TEST_FILE, AT_EACCESS));
-    
+    EXPECT_EQ(0, access(TEST_FILE_, AT_EACCESS));
+
     PF_FileHandle handle;
-    EXPECT_EQ(RC::PF_SUCCESSS, manager_.OpenFile(TEST_FILE, handle));
+    EXPECT_EQ(RC::PF_SUCCESSS, manager_.OpenFile(TEST_FILE_, handle));
     EXPECT_EQ(RC::PF_SUCCESSS, manager_.CloseFile(handle));
 
-    rc = manager_.DestroyFile(TEST_FILE);
+    rc = manager_.DestroyFile(TEST_FILE_);
     if (rc != RC::PF_SUCCESSS)
         PF_PrintError(rc);
     EXPECT_EQ(rc, RC::PF_SUCCESSS);
-    EXPECT_EQ(-1, access(TEST_FILE, AT_EACCESS));
+    EXPECT_EQ(-1, access(TEST_FILE_, AT_EACCESS));
 }
 
 TEST_F(PF_ManagerTest, PF_MANAGER_BLOCK)
@@ -126,4 +126,32 @@ TEST_F(PF_ManagerTest, PF_MANAGER_BLOCK)
             buffers[i] = nullptr;
         }
     }
+}
+
+class PF_FileHandleTest : public testing::Test {
+protected:
+    void SetUp() override
+    {
+        manager_.CreateFile(TEST_FILE_);
+        manager_.OpenFile(TEST_FILE_, handle_);
+    }
+
+    void TearDown() override
+    {
+        manager_.CloseFile(handle_);
+        manager_.DestroyFile(TEST_FILE_);
+    }
+
+protected:
+    PF_Manager manager_;
+    PF_FileHandle handle_;
+    const char* TEST_FILE_ = "/tmp/PF_FILE_HANDLE_TEST";
+};
+
+TEST_F(PF_FileHandleTest, PAGE_MANIPULATE){
+    PF_PageHandle pageHandle;
+    EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+    PageNum pageNum;
+    pageHandle.GetPageNum(pageNum);
+    EXPECT_EQ(0, pageNum);
 }

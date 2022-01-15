@@ -1,16 +1,12 @@
 #ifndef PF_INTERNAL_HH
 #define PF_INTERNAL_HH
 
-#include <cstdint>
 #include <errno.h>
 #include <iostream>
 #include <string.h>
 
-using PageNum = int32_t;
-
-#define ALL_PAGES -1
-#define PF_PAGE_SIZE 4092
-#define PF_FILE_BLOCK_SIZE (PF_PAGE_SIZE + 4)
+using PageNum = int;
+#define PF_FILE_BLOCK_SIZE 4096
 #define PF_BUFFER_SIZE 40
 #define PF_FILE_HEADER_SIZE 4096
 #define PF_PAGE_OFFSET(pageNum) (pageNum * PF_FILE_BLOCK_SIZE + PF_FILE_HEADER_SIZE)
@@ -28,34 +24,9 @@ struct PF_PageHeader {
 
 struct PF_FileHeader {
     int nextFree;
-    int pageNum;
+    PageNum pageNum;
 };
 
-enum class RC {
-    PF_SUCCESSS = 0,
-    PF_EOF = 1, // end of file
-    PF_PAGEPINNED, // page pinned in buffer
-    PF_PAGENOTINBUF, // page to be unpinned is not in buffer
-    PF_PAGEUNPINNED, // page already unpinned
-    PF_PAGEFREE, // page already free
-    PF_INVALIDPAGE, // invalid page number
-    PF_FILEOPEN, // file handle already open
-    PF_CLOSEDFILE, // file is closed
-
-    PF_NOMEM = -1000, // out of memory
-    PF_NOBUF, // out of buffer space
-    PF_INCOMPLETEREAD, // incomplete read of page from file
-    PF_INCOMPLETEWRITE, // incomplete write of page to file
-    PF_HDRREAD, // incomplete read of header from file
-    PF_HDRWRITE, // incomplete write of header to file
-
-    // Internal PF errors:
-    PF_PAGEINBUF, // new allocated page already in buffer
-    PF_HASHNOTFOUND, // hash table entry not found
-    PF_HASHPAGEEXIST, // page already exists in hash table
-    PF_INVALIDNAME, // invalid file name
-    PF_UNIX, // Unix error
-};
 
 #define PF_UNIX_RETURN_IF_ERROR(sys_lib_call_or_return_value) \
     {                                                         \
@@ -66,11 +37,5 @@ enum class RC {
         }                                                     \
     }
 
-#define RETURN_CODE_IF_NOT_SUCCESS(pf_call_or_rc) \
-    {                                       \
-        RC rc = pf_call_or_rc;                    \
-        if (rc != RC::PF_SUCCESSS)          \
-            return rc;                      \
-    }
 
 #endif

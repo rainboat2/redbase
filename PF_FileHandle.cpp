@@ -1,4 +1,6 @@
 #include "pf.h"
+#include "PF_Internal.h"
+
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -76,7 +78,7 @@ RC PF_FileHandle::GetThisPage(PageNum pageNum, PF_PageHandle& pageHandle) const
     }
     pageHandle.pageNum_ = pageNum;
     pageHandle.data_ = data + sizeof(PF_PageHeader);
-    return RC::PF_SUCCESSS;
+    return RC::SUCCESSS;
 }
 
 RC PF_FileHandle::AllocatePage(PF_PageHandle& pageHandle)
@@ -104,7 +106,7 @@ RC PF_FileHandle::AllocatePage(PF_PageHandle& pageHandle)
         isHeadChange_ = true;
         h->nextFree = PageStatus::USED;
     }
-    return RC::PF_SUCCESSS;
+    return RC::SUCCESSS;
 }
 
 RC PF_FileHandle::DisposePage(PageNum pageNum)
@@ -121,7 +123,7 @@ RC PF_FileHandle::DisposePage(PageNum pageNum)
     isHeadChange_ = true;
     RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->MarkDirty(fd_, pageNum));
     RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->UnpinPage(fd_, pageNum));
-    return RC::PF_SUCCESSS;
+    return RC::SUCCESSS;
 }
 
 RC PF_FileHandle::MarkDirty(PageNum pageNum) const
@@ -140,10 +142,10 @@ RC PF_FileHandle::ForcePages(PageNum pageNum) const
     if (pageNum == ALL_PAGES) {
         for (int i = 0; i < header_.pageNum; i++) {
             RC rc = bufferManager_->ForcePage(fd_, i);
-            if (rc != RC::PF_PAGEINBUF && rc != RC::PF_PAGEUNPINNED && rc != RC::PF_SUCCESSS)
+            if (rc != RC::PF_PAGEINBUF && rc != RC::PF_PAGEUNPINNED && rc != RC::SUCCESSS)
                 return rc;
         }
-        return RC::PF_SUCCESSS;
+        return RC::SUCCESSS;
     } else {
         return bufferManager_->ForcePage(fd_, pageNum);
     }
@@ -171,7 +173,7 @@ RC PF_FileHandle::appendFileBlockToEnd()
 
     header_.pageNum++;
     isHeadChange_ = true;
-    return RC::PF_SUCCESSS;
+    return RC::SUCCESSS;
 }
 
 RC PF_FileHandle::ForceHeader()
@@ -184,5 +186,5 @@ RC PF_FileHandle::ForceHeader()
             return RC::PF_INCOMPLETEWRITE;
         isHeadChange_ = false;
     }
-    return RC::PF_SUCCESSS;
+    return RC::SUCCESSS;
 }

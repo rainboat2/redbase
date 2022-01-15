@@ -1,10 +1,14 @@
 #ifndef PF_HH
 #define PF_HH
 
-#include "PF_Internal.h"
+#include "redbase.h"
 #include "PF_BufferManager.h"
 
-void PF_PrintError(RC rc);
+using PageNum = int;
+#define ALL_PAGES -1
+#define PF_PAGE_SIZE 4096 - sizeof(int)
+
+
 
 class PF_FileHandle;
 class PF_Manager;
@@ -67,6 +71,8 @@ class PF_Manager
 public:
     PF_Manager    ();                              // Constructor
     ~PF_Manager   ();                              // Destructor
+    PF_Manager(PF_Manager &manager) = delete;
+    PF_Manager& operator=(const PF_Manager &manager) = delete;
     RC CreateFile    (const char *fileName);       // Create a new file
     RC DestroyFile   (const char *fileName);       // Destroy a file
     RC OpenFile      (const char *fileName, PF_FileHandle &fileHandle);  

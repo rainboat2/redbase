@@ -10,7 +10,7 @@ TEST_DIR=test
 TARGET_DIR=bin
 
 # sources
-PF_SOURCES   = PF_PageHandle.cpp PF_PrintError.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp
+PF_SOURCES   = PF_PageHandle.cpp PrintError.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp
 TEST_SOURCES = PF_Test.cpp
 SOURCES      = main.cpp $(PF_SOURCES) ${TEST_SOURCES}
 

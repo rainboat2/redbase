@@ -86,19 +86,19 @@ protected:
 TEST_F(PF_ManagerTest, PF_MANAGER_FILE_MANAGER)
 {
     RC rc = manager_.CreateFile(TEST_FILE_);
-    if (rc != RC::PF_SUCCESSS)
-        PF_PrintError(rc);
-    EXPECT_EQ(rc, RC::PF_SUCCESSS);
+    if (rc != RC::SUCCESSS)
+        PrintError(rc);
+    EXPECT_EQ(rc, RC::SUCCESSS);
     EXPECT_EQ(0, access(TEST_FILE_, AT_EACCESS));
 
     PF_FileHandle handle;
-    EXPECT_EQ(RC::PF_SUCCESSS, manager_.OpenFile(TEST_FILE_, handle));
-    EXPECT_EQ(RC::PF_SUCCESSS, manager_.CloseFile(handle));
+    EXPECT_EQ(RC::SUCCESSS, manager_.OpenFile(TEST_FILE_, handle));
+    EXPECT_EQ(RC::SUCCESSS, manager_.CloseFile(handle));
 
     rc = manager_.DestroyFile(TEST_FILE_);
-    if (rc != RC::PF_SUCCESSS)
-        PF_PrintError(rc);
-    EXPECT_EQ(rc, RC::PF_SUCCESSS);
+    if (rc != RC::SUCCESSS)
+        PrintError(rc);
+    EXPECT_EQ(rc, RC::SUCCESSS);
     EXPECT_EQ(-1, access(TEST_FILE_, AT_EACCESS));
 }
 
@@ -109,7 +109,7 @@ TEST_F(PF_ManagerTest, PF_MANAGER_BLOCK)
     // allocateBlock and disposeBlock for many times
     for (int i = 0; i < 10; i++) {
         for (int i = 0; i < PF_BUFFER_SIZE; i++) {
-            EXPECT_EQ(RC::PF_SUCCESSS, manager_.AllocateBlock(buffers[i]));
+            EXPECT_EQ(RC::SUCCESSS, manager_.AllocateBlock(buffers[i]));
         }
         char* overflow;
         EXPECT_EQ(RC::PF_NOBUF, manager_.AllocateBlock(overflow));
@@ -124,7 +124,7 @@ TEST_F(PF_ManagerTest, PF_MANAGER_BLOCK)
         }
 
         for (int i = 0; i < PF_BUFFER_SIZE; i++) {
-            EXPECT_EQ(RC::PF_SUCCESSS, manager_.DisposeBlock(buffers[i]));
+            EXPECT_EQ(RC::SUCCESSS, manager_.DisposeBlock(buffers[i]));
             buffers[i] = nullptr;
         }
     }
@@ -154,16 +154,16 @@ TEST_F(PF_FileHandleTest, PAGE_ALLOCAGE_AND_DISPOSE)
 {
     for (int i = 0; i < 2; i++) {
         PF_PageHandle pageHandle;
-        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+        EXPECT_EQ(RC::SUCCESSS, handle_.AllocatePage(pageHandle));
         PageNum pageNum;
         pageHandle.GetPageNum(pageNum);
         EXPECT_EQ(0, pageNum);
-        EXPECT_EQ(RC::PF_SUCCESSS, handle_.DisposePage(pageNum));
+        EXPECT_EQ(RC::SUCCESSS, handle_.DisposePage(pageNum));
     }
 
     for (int i = 0; i < PF_BUFFER_SIZE; i++) {
         PF_PageHandle pageHandle;
-        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+        EXPECT_EQ(RC::SUCCESSS, handle_.AllocatePage(pageHandle));
     }
 
     std::vector<int> delete_seq { 0, 39, 1, 38 };
@@ -175,7 +175,7 @@ TEST_F(PF_FileHandleTest, PAGE_ALLOCAGE_AND_DISPOSE)
 
     for (int i = 0; i < 4; i++) {
         PF_PageHandle pageHandle;
-        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+        EXPECT_EQ(RC::SUCCESSS, handle_.AllocatePage(pageHandle));
         PageNum pageNum;
         pageHandle.GetPageNum(pageNum);
         EXPECT_EQ(pageNum, free_page.top());
@@ -187,7 +187,7 @@ TEST_F(PF_FileHandleTest, PAGE_ALLOCAGE_AND_DISPOSE)
 
     {
         PF_PageHandle pageHandle;
-        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+        EXPECT_EQ(RC::SUCCESSS, handle_.AllocatePage(pageHandle));
         PageNum pageNum;
         pageHandle.GetPageNum(pageNum);
         EXPECT_EQ(40, PF_BUFFER_SIZE);
@@ -200,7 +200,7 @@ TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST)
         PF_PageHandle pageHandle;
         PageNum pageNum;
         char* data;
-        EXPECT_EQ(RC::PF_SUCCESSS, handle_.AllocatePage(pageHandle));
+        EXPECT_EQ(RC::SUCCESSS, handle_.AllocatePage(pageHandle));
         pageHandle.GetPageNum(pageNum);
         pageHandle.GetData(data);
         memset(data, i, PF_PAGE_SIZE);
@@ -220,7 +220,7 @@ TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST)
             EXPECT_EQ(0, data[i]);
 
         for (int i = 1; i < PF_BUFFER_SIZE; i++) {
-            EXPECT_EQ(RC::PF_SUCCESSS, handle_.GetNextPage(pageNum, pageHandle));
+            EXPECT_EQ(RC::SUCCESSS, handle_.GetNextPage(pageNum, pageHandle));
             pageHandle.GetPageNum(pageNum);
             pageHandle.GetData(data);
             for (int j = 0; j < PF_PAGE_SIZE; j++)
@@ -240,7 +240,7 @@ TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST)
             EXPECT_EQ(PF_BUFFER_SIZE - 1, data[i]);
 
         for (int i = PF_BUFFER_SIZE - 2; i >= 0; i--) {
-            EXPECT_EQ(RC::PF_SUCCESSS, handle_.GetPrevPage(pageNum, pageHandle));
+            EXPECT_EQ(RC::SUCCESSS, handle_.GetPrevPage(pageNum, pageHandle));
             pageHandle.GetPageNum(pageNum);
             pageHandle.GetData(data);
             for (int j = 0; j < PF_PAGE_SIZE; j++)

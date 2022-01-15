@@ -51,7 +51,7 @@ public:
     
     ~BitMap();
 
-    inline int size() const {return bitsNum_;}
+    inline int size() const {return bitsNum_;};
     void set(int i, bool b);
     bool get(int i) const;
     // true if all bits is set to 1, else return false

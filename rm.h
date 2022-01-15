@@ -3,10 +3,11 @@
 
 #include "pf.h"
 #include "redbase.h"
-#include "rm_rid.h"
+#include "RM_RID.h"
 
 class RM_FileHandle;
 class RM_FileScan;
+class RM_Record;
 
 class RM_Manager {
 public:
@@ -41,7 +42,7 @@ public:
         int attrOffset,
         CompOp compOp,
         void* value,
-        ClientHint pinHint = NO_HINT);
+        ClientHint pinHint = ClientHint::NO_HINT);
     RC GetNextRec(RM_Record& rec);
     RC CloseScan();
 };
@@ -49,12 +50,15 @@ public:
 class RM_Record {
 public:
     RM_Record();
-    ~RM_Record();
+    ~RM_Record() = default;
 
     // Set pData to point to the record's contents
     RC GetData(char*& pData) const;
 
     RC GetRid(RID& rid) const;
+private:
+    RID rid_;
+    char* data_;
 };
 
 #endif

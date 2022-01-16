@@ -15,7 +15,7 @@
             return RC::RM_INVALID_RID;                                      \
     }
 
-#define SLOT_OFFSET(slotNum) RM_PageHeader::size(fileHeader_.recordSize) + slotNum * fileHeader_.recordSize
+#define SLOT_OFFSET(slotNum) RM_PageHeader::size(fileHeader_.recordSize) + slotNum* fileHeader_.recordSize
 
 RM_FileHandle::RM_FileHandle()
     : isOpen(false)
@@ -44,5 +44,40 @@ RC RM_FileHandle::GetRec(const RID& rid, RM_Record& rec) const
     rid.GetSlotNum(slotNum);
     rec.setData(data + SLOT_OFFSET(slotNum), fileHeader_.recordSize);
     rec.rid_ = rid;
+    return RC::SUCCESSS;
+}
+
+RC RM_FileHandle::InsertRec(const char* pData, RID& rid)
+{
+}
+
+RC RM_FileHandle::getFreePlace(RID& rid)
+{
+    PageNum pageNum;
+    PF_PageHandle page;
+    if (fileHeader_.nextFree == PageStatus::LIST_END) {
+        RETURN_CODE_IF_NOT_SUCCESS(AllocateNewPage(page));
+        page.GetPageNum(pageNum);
+        fileHeader_.nextFree = pageNum;
+        isHeaderChange_ = true;
+    } else {
+        RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.GetThisPage(fileHeader_.nextFree, page));
+    }
+    
+
+}
+
+RC RM_FileHandle::AllocateNewPage(PF_PageHandle& page)
+{
+    RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.AllocatePage(page));
+
+    char* data;
+    page.GetData(data);
+    memset(data, 0, PF_PAGE_SIZE);
+    memset(data, PageStatus::USED, sizeof(int));
+
+    PageNum pageNum;
+    page.GetPageNum(pageNum);
+    pf_fileHandle_.MarkDirty(pageNum);
     return RC::SUCCESSS;
 }

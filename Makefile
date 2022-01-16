@@ -22,20 +22,19 @@ TEST_OBJECTS = $(addprefix ${BUILD_DIR}/, ${TEST_SOURCES:cpp=o})
 OBJECTS      = $(addprefix $(BUILD_DIR)/, $(SOURCES:.cpp=.o))
 
 #libs
-PF_LIB     = $(LIB_DIR)/libpf.a
-RM_LIB     = $(LIB_DIR)/librm.a
-TEST_LIB   = ${LIB_DIR}/libredbase_test.a
-LIBS       = $(PF_LIB) $(RM_LIB)
+PF_LIB        = $(LIB_DIR)/libpf.a
+RM_LIB        = $(LIB_DIR)/librm.a
+READBASE_LIBS = $(PF_LIB) $(RM_LIB)
 
 # targets
 TESTERS = $(TEST_SOURCES:.cpp=)
 
 all: redbase $(TESTERS)
 
-redbase: $(OBJECTS) $(LIBS)
+redbase: $(OBJECTS) $(READBASE_LIBS)
 	$(CC) $(CPPFLAGS) $(LDFLAGS) $(BUILD_DIR)/main.o -L $(LIB_DIR) -o $(TARGET_DIR)/$@
 
-$(TESTERS): % : $(BUILD_DIR)/%.o ${LIBS}
+$(TESTERS): % : $(BUILD_DIR)/%.o ${READBASE_LIBS}
 	$(CC) $(CPPFLAGS) $(LDFLAGS) $< -L $(LIB_DIR) -o $(TARGET_DIR)/$@
 
 # generate library file
@@ -45,10 +44,6 @@ $(PF_LIB): $(PF_OBJECTS)
 
 $(RM_LIB): $(RM_OBJECTS)
 	$(AR) $@ $(RM_OBJECTS)
-	$(RANLIB) $@
-
-$(TEST_LIB): $(TEST_OBJECTS)
-	$(AR) $@ $(TEST_OBJECTS)
 	$(RANLIB) $@
 
 

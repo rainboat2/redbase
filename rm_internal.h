@@ -50,22 +50,16 @@ struct RM_PageHeader {
     }
 };
 
-class BitMap {
+class BitMapWapper {
 public:
-    BitMap();
-    BitMap(char* data, size_t bitsNum);
-    BitMap(const BitMap& b);
-    BitMap& operator=(const BitMap& b);
-    
-    ~BitMap();
+    BitMapWapper(char* data, size_t bitsNum);
+    ~BitMapWapper() = default;
 
     inline size_t size() const {return bitsNum_;};
     void set(size_t i, bool b);
     bool get(size_t i) const;
     // true if all bits is set to 1, else return false
     bool all() const;
-
-    void toBuf(char *buf) const;
 
 private:
     // record bits from left to right

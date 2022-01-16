@@ -4,26 +4,27 @@
 #include <gtest/gtest.h>
 #include <unordered_set>
 
-class BitMapTest : public testing::Test {
+class BitMapWapperTest : public testing::Test {
 protected:
     void SetUp() override
     {
-        char buf[4] { 0, 0, 0, 0 };
-        b1_ = BitMap(buf, 1);
-        b7_ = BitMap(buf, 7);
-        b16_ = BitMap(buf, 16);
-        b31_ = BitMap(buf, 31);
+        memset(b1_buf, 0, 1);
+        memset(b7_buf, 0, 1);
+        memset(b16_buf, 0, 2);
+        memset(b31_buf, 0, 4);
     }
 
 protected:
-    BitMap b1_;
-    BitMap b7_;
-    BitMap b16_;
-    BitMap b31_;
+    char b1_buf[1];
+    char b7_buf[1];
+    char b16_buf[2];
+    char b31_buf[4];
 };
 
-TEST_F(BitMapTest, BITMAPTEST)
+TEST_F(BitMapWapperTest, BITMAPTEST)
 {
+    BitMapWapper b1_(b1_buf, 1), b7_(b7_buf, 7), b16_(b16_buf, 16), b31_(b31_buf, 31);
+
     EXPECT_EQ(false, b1_.all());
     b1_.set(0, true);
     EXPECT_EQ(true, b1_.all());
@@ -58,15 +59,17 @@ TEST_F(BitMapTest, BITMAPTEST)
     }
 }
 
-TEST_F(BitMapTest, BITMAP_CREATE_GET_TEST)
+TEST_F(BitMapWapperTest, BITMAP_CREATE_GET_TEST)
 {
-    char buf[4] { 0, 0, 0, 0 };
-    BitMap b1(buf, 27);
+    char buf1[4] { 0, 0, 0, 0 };
+    BitMapWapper b1(buf1, 27);
     std::unordered_set<int> s1 { 1, 5, 11, 8, 23 };
     for (int i : s1)
         b1.set(i, false);
-    b1.toBuf(buf);
-    BitMap b2(buf, b1.size());
+
+    char buf2[4];
+    memcpy(buf2, buf1, 4);
+    BitMapWapper b2(buf2, b1.size());
     for (int i = 0; i < b1.size(); i++){
         EXPECT_EQ(b1.get(i), b2.get(i));
     }

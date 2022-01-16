@@ -38,6 +38,10 @@ public:
     RC ForcePages(PageNum pageNum = ALL_PAGES) const;
 
 private:
+    RC getFreePlace(RID &rid);
+    RC AllocateNewPage(PF_PageHandle &page);
+
+private:
     PF_FileHandle pf_fileHandle_;
     RM_FileHeader fileHeader_;
     bool isHeaderChange_;

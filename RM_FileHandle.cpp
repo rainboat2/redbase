@@ -15,6 +15,8 @@
             return RC::RM_INVALID_RID;                                      \
     }
 
+#define SLOT_OFFSET(slotNum) RM_PageHeader::size(fileHeader_.recordSize) + slotNum * fileHeader_.recordSize
+
 RM_FileHandle::RM_FileHandle()
     : isOpen(false)
 {
@@ -35,9 +37,12 @@ RC RM_FileHandle::GetRec(const RID& rid, RM_Record& rec) const
     PageNum pageNum;
     rid.GetPageNum(pageNum);
     RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.GetThisPage(pageNum, page));
+
     char* data;
     page.GetData(data);
-    rec.setData(data + RM_PageHeader::size(fileHeader_.recordSize), fileHeader_.recordSize);
+    SlotNum slotNum;
+    rid.GetSlotNum(slotNum);
+    rec.setData(data + SLOT_OFFSET(slotNum), fileHeader_.recordSize);
     rec.rid_ = rid;
     return RC::SUCCESSS;
 }

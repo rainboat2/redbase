@@ -33,13 +33,13 @@ TEST_F(BitMapTest, BITMAPTEST)
     EXPECT_EQ(true, b7_.get(6));
 
     EXPECT_EQ(16, b16_.size());
-    for (int i = 0; i < b16_.size(); i++)
+    for (size_t i = 0; i < b16_.size(); i++)
         b16_.set(i, true);
     EXPECT_EQ(true, b16_.all());
-    std::unordered_set<int> s1 { 1, 5, 11, 8 };
-    for (int i : s1)
+    std::unordered_set<size_t> s1 { 1, 5, 11, 8 };
+    for (size_t i : s1)
         b16_.set(i, false);
-    for (int i = 0; i < b16_.size(); i++) {
+    for (size_t i = 0; i < b16_.size(); i++) {
         if (s1.find(i) != s1.end())
             EXPECT_EQ(false, b16_.get(i));
         else
@@ -47,10 +47,10 @@ TEST_F(BitMapTest, BITMAPTEST)
     }
 
     std::unordered_set<int> s2 { 3, 6, 25 };
-    for (int i : s2) {
+    for (size_t i : s2) {
         b31_.set(i, true);
     }
-    for (int i = 0; i < s2.size(); i++) {
+    for (size_t i = 0; i < s2.size(); i++) {
         if (s2.find(i) == s2.end())
             EXPECT_EQ(false, b31_.get(i));
         else

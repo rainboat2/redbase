@@ -104,7 +104,7 @@ bool LRU<T, hash>::contain(T &t) const
 template <typename T, typename hash>
 void LRU<T, hash>::push(T &t)
 {
-    ListNode* node = new ListNode { t };
+    ListNode* node = new ListNode { t, nullptr, nullptr};
     addToListHead(node);
     eleToNode_[t] = node;
 }

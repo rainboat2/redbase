@@ -18,8 +18,8 @@ protected:
         keys[0] = { 0, 0 };
         keys[1] = { 0, 2147483647 };
         keys[2] = { 2147483647, 0 };
-        for (int i = 3; i < keys.size(); i++) {
-            keys[i] = { i, i };
+        for (size_t i = 3; i < keys.size(); i++) {
+            keys[i] = { (int) i, (int) i };
         }
     }
 
@@ -217,10 +217,10 @@ TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST)
         handle_.GetFirstPage(pageHandle);
         pageHandle.GetPageNum(pageNum);
         pageHandle.GetData(data);
-        for (int i = 0; i < PF_PAGE_SIZE; i++)
+        for (size_t i = 0; i < PF_PAGE_SIZE; i++)
             EXPECT_EQ(0, data[i]);
 
-        for (int i = 1; i < PF_BUFFER_SIZE; i++) {
+        for (size_t i = 1; i < PF_BUFFER_SIZE; i++) {
             EXPECT_EQ(RC::SUCCESSS, handle_.GetNextPage(pageNum, pageHandle));
             pageHandle.GetPageNum(pageNum);
             pageHandle.GetData(data);

@@ -12,16 +12,14 @@
 //     char* data;
 //     short int pinCount;
 //     bool isDirty;
-
-    
 // };
 
 int main(){
     const char* file = "/tmp/test";
     PF_Manager manger;
     PF_FileHandle fileHandle;
-    manger.CreateFile("/tmp/test");
-    manger.OpenFile("/tmp/test", fileHandle);
+    manger.CreateFile(file);
+    manger.OpenFile(file, fileHandle);
     PF_PageHandle pageHandle;
     fileHandle.AllocatePage(pageHandle);
 

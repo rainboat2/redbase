@@ -1,6 +1,6 @@
 CC       = g++
 LDFLAGS  = -lpf -lrm -lgtest -lgtest_main -pthread
-CPPFLAGS = -std=c++14 -g
+CPPFLAGS = -std=c++14 -g -Wall
 AR       = ar -rc
 RANLIB   = ranlib
 
@@ -11,7 +11,7 @@ TARGET_DIR=bin
 
 # sources
 PF_SOURCES   = PF_PageHandle.cpp PrintError.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp
-RM_SOURCES   = BitMap.cpp RM_RID.cpp RM_Manager.cpp
+RM_SOURCES   = BitMap.cpp RM_RID.cpp RM_Manager.cpp RM_Record.cpp RM_FileHandle.cpp
 TEST_SOURCES = PF_Test.cpp RM_Test.cpp
 SOURCES      = main.cpp $(PF_SOURCES) $(RM_SOURCES) ${TEST_SOURCES}
 

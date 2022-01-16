@@ -44,20 +44,24 @@ struct RM_PageHeader {
         memcpy(buf, &nextFree, sizeof(int));
         memcpy(buf, bitmap + sizeof(int), BITMAP_SIZE(recordNums));
     }
+
+    static inline int size(int recordNums){
+        return sizeof(int) + BITMAP_SIZE(recordNums);
+    }
 };
 
 class BitMap {
 public:
     BitMap();
-    BitMap(char* data, int bitsNum);
+    BitMap(char* data, size_t bitsNum);
     BitMap(const BitMap& b);
     BitMap& operator=(const BitMap& b);
     
     ~BitMap();
 
-    inline int size() const {return bitsNum_;};
-    void set(int i, bool b);
-    bool get(int i) const;
+    inline size_t size() const {return bitsNum_;};
+    void set(size_t i, bool b);
+    bool get(size_t i) const;
     // true if all bits is set to 1, else return false
     bool all() const;
 
@@ -66,7 +70,7 @@ public:
 private:
     // record bits from left to right
     unsigned char* bitmap_;
-    int bitsNum_;
+    size_t bitsNum_;
 };
 
 #endif

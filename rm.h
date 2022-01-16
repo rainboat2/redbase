@@ -20,6 +20,9 @@ public:
     RC CloseFile(RM_FileHandle& fileHandle);
 
 private:
+    static int countRecordNums(int recordSize);
+
+private:
     PF_Manager &pf_manager_;
 };
 
@@ -33,6 +36,12 @@ public:
     RC DeleteRec(const RID& rid);
     RC UpdateRec(const RM_Record& rec);
     RC ForcePages(PageNum pageNum = ALL_PAGES) const;
+
+private:
+    PF_FileHandle pf_fileHandle_;
+    RM_FileHeader fileHeader_;
+    bool isHeaderChange_;
+    bool isOpen;
 };
 
 class RM_FileScan {
@@ -59,6 +68,11 @@ public:
     RC GetData(char*& pData) const;
 
     RC GetRid(RID& rid) const;
+
+    friend class RM_FileHandle;
+private:
+    char *data_;
+    RID rid_;
 };
 
 #endif

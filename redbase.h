@@ -37,27 +37,38 @@ enum class RC {
 
     RM_RECORD_SIZE_TOO_LAGRE = 1000,
     RM_INVALID_RECORD_SIZE,
+    RM_FILE_NOT_OPEN,
+    RM_INVALID_RID,
+
 };
 
 void PrintError(RC rc);
 
-enum class AttrType{
-    RD_INT, RD_FLOAT, RD_STRING
+enum class AttrType {
+    RD_INT,
+    RD_FLOAT,
+    RD_STRING
 };
 
-enum class CompOp{
-    EQ, LT, GT, LE, GE, NE, NO
+enum class CompOp {
+    EQ,
+    LT,
+    GT,
+    LE,
+    GE,
+    NE,
+    NO
 };
 
-enum class ClientHint{
+enum class ClientHint {
     NO_HINT
 };
 
 #define RETURN_CODE_IF_NOT_SUCCESS(redbase_call_or_rc) \
-    {                                             \
+    {                                                  \
         RC rc = redbase_call_or_rc;                    \
-        if (rc != RC::SUCCESSS)                \
-            return rc;                            \
+        if (rc != RC::SUCCESSS)                        \
+            return rc;                                 \
     }
 
 #endif

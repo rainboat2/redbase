@@ -7,7 +7,7 @@ BitMap::BitMap()
     bitmap_[0] = 0;
 }
 
-BitMap::BitMap(char* data, int bitsNum)
+BitMap::BitMap(char* data, size_t bitsNum)
     : bitsNum_(bitsNum)
 {
     int bitmapSize = BITMAP_SIZE(bitsNum_);
@@ -41,15 +41,15 @@ BitMap::~BitMap()
     delete[] bitmap_;
 }
 
-void BitMap::set(int i, bool b)
+void BitMap::set(size_t i, bool b)
 {
-    int charIndex = i / 8;
-    int pos = i % 8;
+    size_t charIndex = i / 8;
+    size_t pos = i % 8;
     if (b) bitmap_[charIndex] = bitmap_[charIndex] | 0b10000000 >> pos;
     else   bitmap_[charIndex] = bitmap_[charIndex] & ~(0b10000000 >> pos);
 }
 
-bool BitMap::get(int i) const
+bool BitMap::get(size_t i) const
 {
     int charIndex = i / 8;
     int pos = i % 8;
@@ -59,9 +59,9 @@ bool BitMap::get(int i) const
 bool BitMap::all() const
 {
     constexpr unsigned char all_one = 0b11111111;
-    int bitmap_size = BITMAP_SIZE(bitsNum_);
+    size_t bitmap_size = BITMAP_SIZE(bitsNum_);
     unsigned char rs = all_one;
-    for (int i = 0; i < bitmap_size - 1; i++) {
+    for (size_t i = 0; i < bitmap_size - 1; i++) {
         rs &= bitmap_[i];
     }
     unsigned char last = all_one >> bitsNum_ % 8;

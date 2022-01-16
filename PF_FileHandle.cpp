@@ -182,7 +182,7 @@ RC PF_FileHandle::ForceHeader()
         PF_UNIX_RETURN_IF_ERROR(lseek(fd_, 0, SEEK_SET));
         int num = write(fd_, &header_, sizeof(PF_FileHeader));
         PF_UNIX_RETURN_IF_ERROR(num);
-        if (num < sizeof(PF_FileHeader))
+        if (num < (int)sizeof(PF_FileHeader))
             return RC::PF_INCOMPLETEWRITE;
         isHeadChange_ = false;
     }

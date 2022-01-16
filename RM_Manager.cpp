@@ -40,11 +40,30 @@ RC RM_Manager::DestroyFile(const char* fileName)
 
 RC RM_Manager::OpenFile(const char* fileName, RM_FileHandle& fileHandle)
 {
+    if (fileHandle.isOpen)
+        return RC::RM_FILE_ALREAD_OPEN;
+
+    RETURN_CODE_IF_NOT_SUCCESS(pf_manager_.OpenFile(fileName, fileHandle.pf_fileHandle_));
+    PF_PageHandle page;
+    RETURN_CODE_IF_NOT_SUCCESS(fileHandle.pf_fileHandle_.GetFirstPage(page));
+    fileHandle.isOpen = true;
+    char *data;
+    page.GetData(data);
+    fileHandle.fileHeader_ = *((RM_FileHeader*) data);
+    fileHandle.isHeaderChange_ = false;
+
+    PageNum pageNum;
+    page.GetPageNum(pageNum);
+    RETURN_CODE_IF_NOT_SUCCESS(fileHandle.pf_fileHandle_.UnpinPage(pageNum));
     return RC::SUCCESSS;
 }
 
 RC RM_Manager::CloseFile(RM_FileHandle& fileHandle)
 {
+    fileHandle.ForcePages(ALL_PAGES);
+    fileHandle.ForceHeader();
+    RETURN_CODE_IF_NOT_SUCCESS(pf_manager_.CloseFile(fileHandle.pf_fileHandle_));
+    fileHandle.isOpen = false;
     return RC::SUCCESSS;
 }
 

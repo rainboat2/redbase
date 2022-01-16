@@ -1,9 +1,9 @@
 #ifndef RM_HH
 #define RM_HH
 
+#include "RM_RID.h"
 #include "pf.h"
 #include "redbase.h"
-#include "RM_RID.h"
 
 class RM_FileHandle;
 class RM_FileScan;
@@ -23,7 +23,7 @@ private:
     static int countRecordNums(int recordSize);
 
 private:
-    PF_Manager &pf_manager_;
+    PF_Manager& pf_manager_;
 };
 
 class RM_FileHandle {
@@ -37,9 +37,15 @@ public:
     RC UpdateRec(const RM_Record& rec);
     RC ForcePages(PageNum pageNum = ALL_PAGES) const;
 
+    friend class RM_Manager;
+
 private:
-    RC getFreePlace(RID &rid);
-    RC AllocateNewPage(PF_PageHandle &page);
+    RC getFreeSlot(RID& rid);
+    RC writeDataToSlot(const char* pData, RID& rid);
+    RC AllocateNewPage(PF_PageHandle& page);
+    RC MarkPageAsFull(PF_PageHandle& page);
+    RC MarkPageAsNotFull(PF_PageHandle& page);
+    RC ForceHeader();
 
 private:
     PF_FileHandle pf_fileHandle_;
@@ -79,7 +85,7 @@ private:
     void setData(char* buf, int size);
 
 private:
-    char *data_;
+    char* data_;
     RID rid_;
 };
 

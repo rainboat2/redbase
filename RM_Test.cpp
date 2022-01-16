@@ -37,7 +37,7 @@ TEST_F(BitMapWapperTest, BITMAPTEST)
     for (size_t i = 0; i < b16_.size(); i++)
         b16_.set(i, true);
     EXPECT_EQ(true, b16_.all());
-    std::unordered_set<size_t> s1 { 1, 5, 11, 8 };
+    std::unordered_set<size_t> s1 { 0, 5, 11, 8 };
     for (size_t i : s1)
         b16_.set(i, false);
     for (size_t i = 0; i < b16_.size(); i++) {
@@ -51,6 +51,7 @@ TEST_F(BitMapWapperTest, BITMAPTEST)
     for (size_t i : s2) {
         b31_.set(i, true);
     }
+    EXPECT_EQ(false, b31_.all());
     for (size_t i = 0; i < s2.size(); i++) {
         if (s2.find(i) == s2.end())
             EXPECT_EQ(false, b31_.get(i));
@@ -70,7 +71,24 @@ TEST_F(BitMapWapperTest, BITMAP_CREATE_GET_TEST)
     char buf2[4];
     memcpy(buf2, buf1, 4);
     BitMapWapper b2(buf2, b1.size());
-    for (int i = 0; i < b1.size(); i++){
+    for (int i = 0; i < b1.size(); i++) {
         EXPECT_EQ(b1.get(i), b2.get(i));
+    }
+}
+
+TEST_F(BitMapWapperTest, BITMAP_FIND_TEST)
+{
+    memset(b31_buf, 0b11111111, 4);
+    BitMapWapper b31(b31_buf, 31);
+    EXPECT_EQ(-1, b31.findFirstZero());
+
+    std::vector<size_t> s {0, 7, 8, 15, 16, 28, 30};
+    b31.set(0, false);
+    EXPECT_EQ(b31.all(), false);
+    EXPECT_EQ(0, b31.findFirstZero());
+    for (size_t i : s){
+        b31.set(i, false);
+        EXPECT_EQ(i, b31.findFirstZero());
+        b31.set(i, true);
     }
 }

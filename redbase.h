@@ -5,8 +5,10 @@
 
 enum PageStatus : int {
     LIST_END = -1,
-    USED = -2,
-    INVALID = -3
+    PF_USED = -2,
+    PF_INVALID = -3,
+
+    RM_PAGE_FULL = -4,
 };
 
 // definition of return code
@@ -39,6 +41,7 @@ enum class RC {
     RM_INVALID_RECORD_SIZE,
     RM_FILE_NOT_OPEN,
     RM_INVALID_RID,
+    RM_FILE_ALREAD_OPEN,
 
 };
 

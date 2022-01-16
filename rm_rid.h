@@ -16,6 +16,8 @@ public:
 
     RC GetSlotNum(SlotNum& slotNum) const;
 
+    friend class RM_FileHandle;
+
 private:
     PageNum pageNum_;
     SlotNum slotNum_;

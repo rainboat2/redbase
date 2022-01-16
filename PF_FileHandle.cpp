@@ -72,7 +72,7 @@ RC PF_FileHandle::GetThisPage(PageNum pageNum, PF_PageHandle& pageHandle) const
     RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, pageNum, data));
 
     PF_PageHeader* header_ = (PF_PageHeader*)data;
-    if (header_->nextFree != PageStatus::USED) {
+    if (header_->nextFree != PageStatus::PF_USED) {
         bufferManager_->UnpinPage(fd_, pageNum);
         return RC::PF_INVALIDPAGE;
     }
@@ -104,7 +104,7 @@ RC PF_FileHandle::AllocatePage(PF_PageHandle& pageHandle)
         PF_PageHeader* h = (PF_PageHeader*)data;
         header_.nextFree = h->nextFree;
         isHeadChange_ = true;
-        h->nextFree = PageStatus::USED;
+        h->nextFree = PageStatus::PF_USED;
     }
     return RC::SUCCESSS;
 }
@@ -163,7 +163,7 @@ RC PF_FileHandle::appendFileBlockToEnd()
 {
     char buffer[PF_FILE_BLOCK_SIZE];
     PF_PageHeader* h = (PF_PageHeader*)buffer;
-    h->nextFree = PageStatus::USED;
+    h->nextFree = PageStatus::PF_USED;
 
     PF_UNIX_RETURN_IF_ERROR(lseek(fd_, 0, SEEK_END));
     int num = write(fd_, buffer, PF_FILE_BLOCK_SIZE);

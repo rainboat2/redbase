@@ -26,25 +26,6 @@ struct RM_PageHeader {
     int nextFree;
     char* bitmap;
 
-    RM_PageHeader(int recordNums, char* buf)
-    {
-        memcpy(&nextFree, buf, sizeof(int));
-        int bitMapSize = BITMAP_SIZE(recordNums);
-        bitmap = new char[bitMapSize];
-        memcpy(bitmap, buf + sizeof(int), bitMapSize);
-    }
-
-    ~RM_PageHeader()
-    {
-        delete bitmap;
-    }
-
-    void to_buffer(int recordNums, char* buf)
-    {
-        memcpy(buf, &nextFree, sizeof(int));
-        memcpy(buf, bitmap + sizeof(int), BITMAP_SIZE(recordNums));
-    }
-
     static inline int size(int recordNums){
         return sizeof(int) + BITMAP_SIZE(recordNums);
     }
@@ -60,11 +41,13 @@ public:
     bool get(size_t i) const;
     // true if all bits is set to 1, else return false
     bool all() const;
+    int findFirstZero() const;
 
 private:
     // record bits from left to right
     unsigned char* bitmap_;
     size_t bitsNum_;
+    size_t bitmap_size_;
 };
 
 #endif

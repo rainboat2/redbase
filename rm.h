@@ -11,13 +11,16 @@ class RM_Record;
 
 class RM_Manager {
 public:
-    RM_Manager(PF_Manager& pfm);
-    ~RM_Manager();
+    RM_Manager(PF_Manager& pf);
+    ~RM_Manager() = default;
     RC CreateFile(const char* fileName, int recordSize);
 
     RC DestroyFile(const char* fileName);
     RC OpenFile(const char* fileName, RM_FileHandle& fileHandle);
     RC CloseFile(RM_FileHandle& fileHandle);
+
+private:
+    PF_Manager &pf_manager_;
 };
 
 class RM_FileHandle {

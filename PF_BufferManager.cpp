@@ -1,3 +1,4 @@
+#include "PF_Internal.h"
 #include "PF_BufferManager.h"
 
 #include <sys/types.h>

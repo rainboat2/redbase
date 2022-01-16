@@ -11,11 +11,6 @@ using PageNum = int;
 #define PF_FILE_HEADER_SIZE 4096
 #define PF_PAGE_OFFSET(pageNum) (pageNum * PF_FILE_BLOCK_SIZE + PF_FILE_HEADER_SIZE)
 
-enum PageStatus : int {
-    LIST_END = -1,
-    USED = -2,
-    INVALID = -3
-};
 
 struct PF_PageHeader {
     // 大于0的时候表示下一个free page，小于0表示page的状态

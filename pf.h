@@ -3,11 +3,11 @@
 
 #include "redbase.h"
 #include "PF_BufferManager.h"
+#include "PF_Internal.h"
 
 using PageNum = int;
 #define ALL_PAGES -1
 #define PF_PAGE_SIZE 4096 - sizeof(int)
-
 
 
 class PF_FileHandle;

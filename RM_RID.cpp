@@ -1,4 +1,5 @@
 #include "RM_RID.h"
+#include "redbase.h"
 
 RID::RID():pageNum_(-1), slotNum_(-1){}
 

@@ -3,6 +3,12 @@
 
 #define MAX_STRING_LEN 255
 
+enum PageStatus : int {
+    LIST_END = -1,
+    USED = -2,
+    INVALID = -3
+};
+
 // definition of return code
 enum class RC {
     SUCCESSS = 0,
@@ -29,6 +35,8 @@ enum class RC {
     PF_INVALIDNAME, // invalid file name
     PF_UNIX, // Unix error
 
+    RM_RECORD_SIZE_TOO_LAGRE = 1000,
+    RM_INVALID_RECORD_SIZE,
 };
 
 void PrintError(RC rc);

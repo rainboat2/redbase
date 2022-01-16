@@ -1,8 +1,8 @@
 #ifndef PF_BUFFERMANGER_HH
 #define PF_BUFFERMANGER_HH
 
-#include "PF_Internal.h"
 #include "redbase.h"
+#include "PF_Internal.h"
 #include "PF_BufferStrategy.h"
 
 #include <unordered_map>

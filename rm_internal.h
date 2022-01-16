@@ -5,8 +5,10 @@
 
 using SlotNum = int;
 
+
 struct RM_FileHeader {
     int pageNums;
+    // point to the next free page
     int nextFree;
     int recordSize;
     int recordNumsOfEachPage;
@@ -14,8 +16,10 @@ struct RM_FileHeader {
 
 #define BITMAP_SIZE(recordNums) \
     (recordNums / 8 + ((recordNums % 8 == 0) ? 0 : 1))
+
 // page  structure
 // (RM_PageHeader, bitmap, slot ... slot, free space)
+// nextFree could be RM_PageStatus or positive number(stand for next free page)
 // size of bitmap is depend on RM_FileHeader.recordNumsOfEachPage, use marco BITMAP_SIZE can compute it
 // bits in bitmap: 1 starnd for slot is used, 0 stand for slot is free
 struct RM_PageHeader {

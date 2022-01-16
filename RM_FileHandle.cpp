@@ -2,16 +2,17 @@
 #include "redbase.h"
 #include "rm.h"
 
-#define RETURN_IF_INVALID_RID(rid)                                      \
-    {                                                                   \
-        PageNum pageNum;                                                \
-        rid.GetPageNum(pageNum);                                        \
-        if (pageNum >= fileHeader_.pageNums || pageNum < 0)             \
-            return RC::RM_INVALID_RID;                                  \
-        SlotNum slotNum;                                                \
-        rid.GetSlotNum(slotNum);                                        \
-        if (slotNum >= fileHeader_.recordNumsOfEachPage || slotNum < 0) \
-            return RC::RM_INVALID_RID;                                  \
+#define RETURN_IF_INVALID_RID(rid)                                          \
+    {                                                                       \
+        PageNum pageNum;                                                    \
+        rid.GetPageNum(pageNum);                                            \
+        /* first page is used as header, so pageNum should greater than 0*/ \
+        if (pageNum >= fileHeader_.pageNums || pageNum <= 0)                \
+            return RC::RM_INVALID_RID;                                      \
+        SlotNum slotNum;                                                    \
+        rid.GetSlotNum(slotNum);                                            \
+        if (slotNum >= fileHeader_.recordNumsOfEachPage || slotNum < 0)     \
+            return RC::RM_INVALID_RID;                                      \
     }
 
 RM_FileHandle::RM_FileHandle()
@@ -36,7 +37,7 @@ RC RM_FileHandle::GetRec(const RID& rid, RM_Record& rec) const
     RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.GetThisPage(pageNum, page));
     char* data;
     page.GetData(data);
-    rec.data_ = data + RM_PageHeader::size(fileHeader_.recordSize);
+    rec.setData(data + RM_PageHeader::size(fileHeader_.recordSize), fileHeader_.recordSize);
     rec.rid_ = rid;
     return RC::SUCCESSS;
 }

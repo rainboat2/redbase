@@ -70,6 +70,10 @@ public:
     RC GetRid(RID& rid) const;
 
     friend class RM_FileHandle;
+
+private:
+    void setData(char* buf, int size);
+
 private:
     char *data_;
     RID rid_;

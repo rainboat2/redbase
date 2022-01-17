@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 #include <unordered_set>
+#include <map>
+#include <array>
 
 class BitMapWapperTest : public testing::Test {
 protected:
@@ -111,23 +113,23 @@ protected:
     const int recordNums_ = 23;
 };
 
-TEST_F(RM_PageHeaderTest, RM_PAGE_TEST){
-    RM_PageHeader* pageHdr1 = (RM_PageHeader*) page1_;
-    BitMapWapper b1 (&pageHdr1->bitmap, recordNums_);
-    std::vector<size_t> seq{0, 7, 8, 3, 22};
+TEST_F(RM_PageHeaderTest, RM_PAGE_TEST)
+{
+    RM_PageHeader* pageHdr1 = (RM_PageHeader*)page1_;
+    BitMapWapper b1(&pageHdr1->bitmap, recordNums_);
+    std::vector<size_t> seq { 0, 7, 8, 3, 22 };
     for (auto i : seq)
         b1.set(i, true);
-    
+
     memcpy(page2_, page1_, PF_PAGE_SIZE);
-    RM_PageHeader* pageHdr2 = (RM_PageHeader*) page2_;
-    BitMapWapper b2 (&pageHdr2->bitmap, recordNums_);
-    for (int i = 0; i < recordNums_; i++){
+    RM_PageHeader* pageHdr2 = (RM_PageHeader*)page2_;
+    BitMapWapper b2(&pageHdr2->bitmap, recordNums_);
+    for (int i = 0; i < recordNums_; i++) {
         EXPECT_EQ(b1.get(i), b2.get(i));
     }
 }
 
-class RM_ManagerTest : public testing::Test
-{
+class RM_ManagerTest : public testing::Test {
 protected:
     void SetUp() override { }
 
@@ -136,25 +138,126 @@ protected:
 protected:
     const char* TEST_FILE_ = "/tmp/rm_manager_test";
     PF_Manager pf_manager_;
-    constexpr int record_size_ = 16;
+    constexpr static int record_size_ = 16;
     char data_[record_size_];
 };
 
-TEST_F(RM_ManagerTest, RM_MANAGER_TEST){
-    RM_Manager manager (pf_manager_);
+TEST_F(RM_ManagerTest, RM_MANAGER_TEST)
+{
+    RM_Manager manager(pf_manager_);
     EXPECT_EQ(RC::SUCCESSS, manager.CreateFile(TEST_FILE_, record_size_));
     EXPECT_EQ(0, access(TEST_FILE_, F_OK));
     RM_FileHandle fileHandle;
     EXPECT_EQ(RC::SUCCESSS, manager.OpenFile(TEST_FILE_, fileHandle));
 
-    RID rids[PF_PAGE_SIZE];
-    for (int i = 0; i < PF_PAGE_SIZE; i++){
-        memset(data_, i, record_size_);
-        EXPECT_EQ(RC::SUCCESSS, fileHandle.InsertRec(data_, rids[i]));
+    EXPECT_EQ(RC::SUCCESSS, manager.CloseFile(fileHandle));
+    EXPECT_EQ(RC::SUCCESSS, manager.DestroyFile(TEST_FILE_));
+    EXPECT_NE(0, access(TEST_FILE_, F_OK));
+}
+
+class RM_FileHandleTest : public testing::Test {
+protected:
+    void SetUp() override
+    {
+        pf_manager_ = new PF_Manager;
+        rm_manager_ = new RM_Manager(*pf_manager_);
+        rm_manager_->CreateFile(TEST_FILE_, record_size_);
+        rm_manager_->OpenFile(TEST_FILE_, fileHandle_);
     }
 
-    for (int i = 0; i < PF_PAGE_SIZE; i++){
-        memset(data, i, record_size_);
+    void TearDown() override
+    {
+        rm_manager_->CloseFile(fileHandle_);
+        rm_manager_->DestroyFile(TEST_FILE_);
+        delete rm_manager_;
+        delete pf_manager_;
+    }
+
+protected:
+    const int TEST_RECORD_NUM_ = 2;
+    const int record_size_ = 16;
+    char data_[16];
+    RM_FileHandle fileHandle_;
+    RM_Manager* rm_manager_;
+    PF_Manager* pf_manager_;
+    const char* TEST_FILE_ = "/tmp/rm_filehandletest";
+};
+
+TEST_F(RM_FileHandleTest, RM_FILEHANDLE_INSERT_AND_UPDATE_TEST)
+{
+    RID rids[TEST_RECORD_NUM_];
+    // insert
+    for (int i = 0; i < TEST_RECORD_NUM_; i++) {
+        memset(data_, i, record_size_);
+        EXPECT_EQ(RC::SUCCESSS, fileHandle_.InsertRec(data_, rids[i]));
+    }
+
+    // check data
+    for (int i = 0; i < TEST_RECORD_NUM_; i++) {
+        memset(data_, i, record_size_);
         RM_Record rec;
+        EXPECT_EQ(RC::SUCCESSS, fileHandle_.GetRec(rids[i], rec));
+        char* data;
+        rec.GetData(data);
+        EXPECT_EQ(0, memcmp(data, data_, record_size_));
+    }
+
+    // update data
+    for (int i = 0; i < TEST_RECORD_NUM_; i++) {
+        memset(data_, i + 1, record_size_);
+        RM_Record rec;
+        EXPECT_EQ(RC::SUCCESSS, fileHandle_.GetRec(rids[i], rec));
+        char* data;
+        rec.GetData(data);
+        memcpy(data, data_, record_size_);
+        EXPECT_EQ(RC::SUCCESSS, fileHandle_.UpdateRec(rec));
+    }
+
+    for (int i = 0; i < TEST_RECORD_NUM_; i++) {
+        memset(data_, i + 1, record_size_);
+        RM_Record rec;
+        EXPECT_EQ(RC::SUCCESSS, fileHandle_.GetRec(rids[i], rec));
+        char* data;
+        rec.GetData(data);
+        EXPECT_EQ(0, memcmp(data, data_, record_size_));
+    }
+}
+
+TEST_F(RM_FileHandleTest, RM_FILEHANDLE_DELETE_TEST)
+{
+    std::array<RID, 3000> rids;
+    // insert
+    for (int i = 0; i < rids.size(); i++) {
+        memset(data_, i, record_size_);
+        EXPECT_EQ(RC::SUCCESSS, fileHandle_.InsertRec(data_, rids[i]));
+    }
+
+    std::vector<bool> marked(rids.size());
+    std::vector<RID> deleted;
+    for (int i = 0; i < rids.size(); i++){
+        PageNum pageNum;
+        rids[i].GetPageNum(pageNum);
+        if (!marked[pageNum]){
+            deleted.push_back(rids[i]);
+            marked[pageNum] = true;
+        }
+    }
+    
+    for (int i = deleted.size() - 1; i >= 0; i--){
+        EXPECT_EQ(RC::SUCCESSS, fileHandle_.DeleteRec(deleted[i]));
+    }
+
+    for (int i = 0; i < deleted.size(); i++){
+        RID rid;
+        fileHandle_.InsertRec(data_, rid);
+        PageNum p1, p2;
+        rid.GetPageNum(p1);
+        deleted[i].GetPageNum(p2);
+        EXPECT_EQ(p1, p2);
+
+        SlotNum s1, s2;
+        rid.GetSlotNum(s1);
+        deleted[i].GetSlotNum(s2);
+        EXPECT_EQ(s1, s2);
     }
 }

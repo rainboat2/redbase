@@ -5,7 +5,7 @@ RM_Record::RM_Record():data_(nullptr), rid_({-1, -1}){}
 RM_Record::RM_Record(RM_Record &&record){
     data_ = record.data_;
     rid_ = record.rid_;
-    record.data_ == nullptr;
+    record.data_ = nullptr;
 }
 
 RM_Record::~RM_Record(){

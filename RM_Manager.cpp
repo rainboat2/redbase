@@ -72,7 +72,7 @@ RC RM_Manager::CloseFile(RM_FileHandle& fileHandle)
 int RM_Manager::countRecordNums(int recordSize)
 {
     int recordNums = (PF_PAGE_SIZE - sizeof(int)) / recordSize;
-    while (recordNums > 0 && (sizeof(int) + BITMAP_SIZE(recordNums) + recordNums * recordSize) > PF_PAGE_SIZE)
+    while (recordNums > 0 && (RM_PageHeader::size(recordNums) + recordNums * recordSize) > PF_PAGE_SIZE)
         recordNums--;
     return recordNums;
 }

@@ -8,7 +8,7 @@ class RID {
 public:
     RID();
     
-    ~RID();
+    ~RID() = default;
     
     RID(PageNum pageNum, SlotNum slotNum);
 

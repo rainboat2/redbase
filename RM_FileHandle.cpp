@@ -18,7 +18,7 @@
     }
 
 #define SLOT_OFFSET(slotNum) \
-    (RM_PageHeader::size(fileHeader_.recordSize) + slotNum * fileHeader_.recordSize)
+    (RM_PageHeader::size(fileHeader_.recordNumsOfEachPage) + slotNum * fileHeader_.recordSize)
 
 RM_FileHandle::RM_FileHandle()
     : isOpen(false)
@@ -59,6 +59,8 @@ RC RM_FileHandle::InsertRec(const char* pData, RID& rid)
 {
     RETURN_CODE_IF_NOT_SUCCESS(getFreeSlot(rid));
     RETURN_CODE_IF_NOT_SUCCESS(writeDataToSlot(pData, rid));
+    fileHeader_.pageNums++;
+    isHeaderChange_ = true;
     return RC::SUCCESSS;
 }
 
@@ -82,6 +84,8 @@ RC RM_FileHandle::DeleteRec(const RID& rid)
     bitmap.set(slotNum, false);
     RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.MarkDirty(pageNum));
     RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.UnpinPage(pageNum));
+    fileHeader_.pageNums--;
+    isHeaderChange_ = true;
     return RC::SUCCESSS;
 }
 
@@ -208,13 +212,15 @@ RC RM_FileHandle::ForceHeader()
     if (!isHeaderChange_)
         return RC::SUCCESSS;
     PF_PageHandle page;
+    RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.GetFirstPage(page));
     char* data;
     page.GetData(data);
-    memcpy(&fileHeader_, data, sizeof(RM_FileHandle));
+    memcpy(&fileHeader_, data, sizeof(RM_FileHeader));
     isHeaderChange_ = false;
 
     PageNum pageNum;
     page.GetPageNum(pageNum);
     pf_fileHandle_.MarkDirty(pageNum);
+    pf_fileHandle_.UnpinPage(pageNum);
     return RC::SUCCESSS;
 }

@@ -73,6 +73,10 @@ class RM_Record {
 public:
     RM_Record();
     ~RM_Record();
+    RM_Record(const RM_Record& record) = delete;
+    RM_Record(RM_Record &&record);
+    RM_Record& operator=(const RM_Record &record) = delete;
+
 
     // Set pData to point to the record's contents
     RC GetData(char*& pData) const;

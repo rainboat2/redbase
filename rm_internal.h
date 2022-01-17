@@ -5,7 +5,6 @@
 
 using SlotNum = int;
 
-
 struct RM_FileHeader {
     int pageNums;
     // point to the next free page
@@ -19,14 +18,15 @@ struct RM_FileHeader {
 
 // page  structure
 // (RM_PageHeader, bitmap, slot ... slot, free space)
-// nextFree could be RM_PageStatus or positive number(stand for next free page)
+// nextFree could be PageStatus or positive number(stand for next free page)
 // size of bitmap is depend on RM_FileHeader.recordNumsOfEachPage, use marco BITMAP_SIZE can compute it
 // bits in bitmap: 1 starnd for slot is used, 0 stand for slot is free
 struct RM_PageHeader {
     int nextFree;
-    char* bitmap;
+    char bitmap;
 
-    static inline int size(int recordNums){
+    static inline int size(int recordNums)
+    {
         return sizeof(int) + BITMAP_SIZE(recordNums);
     }
 };
@@ -36,7 +36,7 @@ public:
     BitMapWapper(char* data, size_t bitsNum);
     ~BitMapWapper() = default;
 
-    inline size_t size() const {return bitsNum_;};
+    inline size_t size() const { return bitsNum_; };
     void set(size_t i, bool b);
     bool get(size_t i) const;
     // true if all bits is set to 1, else return false

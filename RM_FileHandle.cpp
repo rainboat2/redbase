@@ -28,7 +28,7 @@ RM_FileHandle::RM_FileHandle()
 RM_FileHandle::~RM_FileHandle()
 {
     ForcePages(ALL_PAGES);
-    if (isHeaderChange_){
+    if (isHeaderChange_) {
         ForceHeader();
     }
 }
@@ -62,6 +62,29 @@ RC RM_FileHandle::InsertRec(const char* pData, RID& rid)
     return RC::SUCCESSS;
 }
 
+RC RM_FileHandle::DeleteRec(const RID& rid)
+{
+    PageNum pageNum;
+    rid.GetPageNum(pageNum);
+    SlotNum slotNum;
+    rid.GetSlotNum(slotNum);
+
+    // getPageData
+    PF_PageHandle page;
+    RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.GetThisPage(pageNum, page));
+    char* data;
+    page.GetData(data);
+
+    BitMapWapper bitmap(&((RM_PageHeader*)data)->bitmap, fileHeader_.recordNumsOfEachPage);
+    if (bitmap.all()) {
+        RETURN_CODE_IF_NOT_SUCCESS(MarkPageAsNotFull(page));
+    }
+    bitmap.set(slotNum, false);
+    RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.MarkDirty(pageNum));
+    RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.UnpinPage(pageNum));
+    return RC::SUCCESSS;
+}
+
 RC RM_FileHandle::UpdateRec(const RM_Record& rec)
 {
     RID rid;
@@ -92,7 +115,7 @@ RC RM_FileHandle::getFreeSlot(RID& rid)
     char* data;
     page.GetData(data);
     RM_PageHeader* pageHdr = (RM_PageHeader*)data;
-    BitMapWapper bitmap(pageHdr->bitmap, fileHeader_.recordNumsOfEachPage);
+    BitMapWapper bitmap(&pageHdr->bitmap, fileHeader_.recordNumsOfEachPage);
     SlotNum slotNum = bitmap.findFirstZero();
     bitmap.set(slotNum, true);
     if (bitmap.all())
@@ -139,12 +162,15 @@ RC RM_FileHandle::AllocateNewPage(PF_PageHandle& page)
     return RC::SUCCESSS;
 }
 
-// push into stack
+// push into stack, non-reentrant
 RC RM_FileHandle::MarkPageAsNotFull(PF_PageHandle& page)
 {
     char* data;
     page.GetData(data);
     RM_PageHeader* pageHdr = (RM_PageHeader*)data;
+    // no need to mark if page alread not full
+    assert(!(pageHdr->nextFree == PageStatus::LIST_END || pageHdr->nextFree > 0));
+
     pageHdr->nextFree = fileHeader_.nextFree;
 
     PageNum pageNum;
@@ -156,7 +182,7 @@ RC RM_FileHandle::MarkPageAsNotFull(PF_PageHandle& page)
     return RC::SUCCESSS;
 }
 
-// pop out from stack
+// pop out from stack, non-reentrant
 RC RM_FileHandle::MarkPageAsFull(PF_PageHandle& page)
 {
     char* data;
@@ -182,7 +208,7 @@ RC RM_FileHandle::ForceHeader()
     if (!isHeaderChange_)
         return RC::SUCCESSS;
     PF_PageHandle page;
-    char *data;
+    char* data;
     page.GetData(data);
     memcpy(&fileHeader_, data, sizeof(RM_FileHandle));
     isHeaderChange_ = false;

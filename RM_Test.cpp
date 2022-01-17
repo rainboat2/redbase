@@ -1,5 +1,7 @@
 #include "RM_Internal.h"
+#include "pf.h"
 #include "rm.h"
+#include <unistd.h>
 
 #include <gtest/gtest.h>
 #include <unordered_set>
@@ -82,13 +84,77 @@ TEST_F(BitMapWapperTest, BITMAP_FIND_TEST)
     BitMapWapper b31(b31_buf, 31);
     EXPECT_EQ(-1, b31.findFirstZero());
 
-    std::vector<size_t> s {0, 7, 8, 15, 16, 28, 30};
+    std::vector<size_t> s { 0, 7, 8, 15, 16, 28, 30 };
     b31.set(0, false);
     EXPECT_EQ(b31.all(), false);
     EXPECT_EQ(0, b31.findFirstZero());
-    for (size_t i : s){
+    for (size_t i : s) {
         b31.set(i, false);
         EXPECT_EQ(i, b31.findFirstZero());
         b31.set(i, true);
+    }
+}
+
+class RM_PageHeaderTest : public testing::Test {
+protected:
+    void SetUp() override
+    {
+        memset(page1_, 0, PF_PAGE_SIZE);
+        memset(page2_, 0, PF_PAGE_SIZE);
+    }
+
+    void TearDown() override { }
+
+protected:
+    char page1_[PF_PAGE_SIZE];
+    char page2_[PF_PAGE_SIZE];
+    const int recordNums_ = 23;
+};
+
+TEST_F(RM_PageHeaderTest, RM_PAGE_TEST){
+    RM_PageHeader* pageHdr1 = (RM_PageHeader*) page1_;
+    BitMapWapper b1 (&pageHdr1->bitmap, recordNums_);
+    std::vector<size_t> seq{0, 7, 8, 3, 22};
+    for (auto i : seq)
+        b1.set(i, true);
+    
+    memcpy(page2_, page1_, PF_PAGE_SIZE);
+    RM_PageHeader* pageHdr2 = (RM_PageHeader*) page2_;
+    BitMapWapper b2 (&pageHdr2->bitmap, recordNums_);
+    for (int i = 0; i < recordNums_; i++){
+        EXPECT_EQ(b1.get(i), b2.get(i));
+    }
+}
+
+class RM_ManagerTest : public testing::Test
+{
+protected:
+    void SetUp() override { }
+
+    void TearDown() override { }
+
+protected:
+    const char* TEST_FILE_ = "/tmp/rm_manager_test";
+    PF_Manager pf_manager_;
+    constexpr int record_size_ = 16;
+    char data_[record_size_];
+};
+
+TEST_F(RM_ManagerTest, RM_MANAGER_TEST){
+    RM_Manager manager (pf_manager_);
+    EXPECT_EQ(RC::SUCCESSS, manager.CreateFile(TEST_FILE_, record_size_));
+    EXPECT_EQ(0, access(TEST_FILE_, F_OK));
+    RM_FileHandle fileHandle;
+    EXPECT_EQ(RC::SUCCESSS, manager.OpenFile(TEST_FILE_, fileHandle));
+
+    RID rids[PF_PAGE_SIZE];
+    for (int i = 0; i < PF_PAGE_SIZE; i++){
+        memset(data_, i, record_size_);
+        EXPECT_EQ(RC::SUCCESSS, fileHandle.InsertRec(data_, rids[i]));
+    }
+
+    for (int i = 0; i < PF_PAGE_SIZE; i++){
+        memset(data, i, record_size_);
+        RM_Record rec;
     }
 }

@@ -51,13 +51,13 @@ private:
     PF_FileHandle pf_fileHandle_;
     RM_FileHeader fileHeader_;
     bool isHeaderChange_;
-    bool isOpen;
+    bool isOpen_;
 };
 
 class RM_FileScan {
 public:
     RM_FileScan();
-    ~RM_FileScan();
+    ~RM_FileScan() = default;
     RC OpenScan(const RM_FileHandle& fileHandle,
         AttrType attrType,
         int attrLength,
@@ -67,6 +67,11 @@ public:
         ClientHint pinHint = ClientHint::NO_HINT);
     RC GetNextRec(RM_Record& rec);
     RC CloseScan();
+
+private:
+    RM_FileHandle *fileHandle_;
+    bool isOpen_;
+    RID cur;
 };
 
 class RM_Record {

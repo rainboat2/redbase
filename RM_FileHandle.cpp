@@ -21,7 +21,7 @@
     (RM_PageHeader::size(fileHeader_.recordNumsOfEachPage) + slotNum * fileHeader_.recordSize)
 
 RM_FileHandle::RM_FileHandle()
-    : isOpen(false)
+    : isOpen_(false)
 {
 }
 
@@ -35,7 +35,7 @@ RM_FileHandle::~RM_FileHandle()
 
 RC RM_FileHandle::GetRec(const RID& rid, RM_Record& rec) const
 {
-    if (!isOpen)
+    if (!isOpen_)
         return RC::RM_FILE_NOT_OPEN;
     RETURN_IF_INVALID_RID(rid);
 

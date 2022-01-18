@@ -42,7 +42,6 @@ public:
 
 private:
     RC getFreeSlot(RID& rid);
-    RC isValidSlot(RID& rid);
     RC writeDataToSlot(const char* pData, RID& rid);
     RC AllocateNewPage(PF_PageHandle& page);
     RC MarkPageAsFull(PF_PageHandle& page);
@@ -71,9 +70,18 @@ public:
     RC CloseScan();
 
 private:
+    bool isMatch(RM_Record &rec);
+
+private:
     RM_FileHandle *fileHandle_;
     bool isOpen_;
-    RID cur;
+    AttrType attrType_;
+    int attrLength_;
+    int attrOffset_;
+    CompOp compOp_;
+    void* value_;
+    ClientHint pinHint_;
+    RID cur_;
 };
 
 class RM_Record {
@@ -83,6 +91,7 @@ public:
     RM_Record(const RM_Record& record) = delete;
     RM_Record(RM_Record &&record);
     RM_Record& operator=(const RM_Record &record) = delete;
+    RM_Record& operator=(RM_Record &&record);
 
 
     // Set pData to point to the record's contents

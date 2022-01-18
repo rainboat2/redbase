@@ -8,6 +8,14 @@ RM_Record::RM_Record(RM_Record &&record){
     record.data_ = nullptr;
 }
 
+RM_Record& RM_Record::operator=(RM_Record &&record){
+    if (data_ != nullptr)
+        delete[] data_;
+    data_ = record.data_;
+    rid_ = record.rid_;
+    record.data_ = nullptr;
+}
+
 RM_Record::~RM_Record(){
     if (data_ != nullptr)
         delete[] data_;

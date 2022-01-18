@@ -24,7 +24,7 @@ RC RM_Manager::CreateFile(const char* fileName, int recordSize)
     char* data;
     page.GetData(data);
     RM_FileHeader* rfh = (RM_FileHeader*)data;
-    rfh->pageNums = 0;
+    rfh->pageNums = 1;
     rfh->nextFree = PageStatus::LIST_END;
     rfh->recordSize = recordSize;
     rfh->recordNumsOfEachPage = recordNums;

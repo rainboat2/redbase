@@ -9,6 +9,8 @@ public:
     RID();
     
     ~RID() = default;
+
+    bool operator==(const RID &rid) const;
     
     RID(PageNum pageNum, SlotNum slotNum);
 

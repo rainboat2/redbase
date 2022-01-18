@@ -3,10 +3,10 @@
 #include "rm.h"
 #include <unistd.h>
 
-#include <gtest/gtest.h>
-#include <unordered_set>
-#include <map>
 #include <array>
+#include <gtest/gtest.h>
+#include <map>
+#include <unordered_set>
 
 class BitMapWapperTest : public testing::Test {
 protected:
@@ -174,7 +174,7 @@ protected:
     }
 
 protected:
-    const int TEST_RECORD_NUM_ = 2;
+    const int TEST_RECORD_NUM_ = 2000;
     const int record_size_ = 16;
     char data_[16];
     RM_FileHandle fileHandle_;
@@ -234,30 +234,51 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_DELETE_TEST)
 
     std::vector<bool> marked(rids.size());
     std::vector<RID> deleted;
-    for (int i = 0; i < rids.size(); i++){
+    for (int i = 0; i < rids.size(); i++) {
         PageNum pageNum;
         rids[i].GetPageNum(pageNum);
-        if (!marked[pageNum]){
+        if (!marked[pageNum]) {
             deleted.push_back(rids[i]);
             marked[pageNum] = true;
         }
     }
-    
-    for (int i = deleted.size() - 1; i >= 0; i--){
+
+    for (int i = deleted.size() - 1; i >= 0; i--) {
         EXPECT_EQ(RC::SUCCESSS, fileHandle_.DeleteRec(deleted[i]));
     }
 
-    for (int i = 0; i < deleted.size(); i++){
+    for (int i = 0; i < deleted.size(); i++) {
         RID rid;
         fileHandle_.InsertRec(data_, rid);
-        PageNum p1, p2;
-        rid.GetPageNum(p1);
-        deleted[i].GetPageNum(p2);
-        EXPECT_EQ(p1, p2);
+        EXPECT_EQ(rid, deleted[i]);
+    }
+}
 
-        SlotNum s1, s2;
-        rid.GetSlotNum(s1);
-        deleted[i].GetSlotNum(s2);
-        EXPECT_EQ(s1, s2);
+TEST_F(RM_FileHandleTest, RM_FILEHANDLE_GET_NEXT_TEST)
+{
+    std::array<RID, 400> rids;
+    for (int i = 0; i < rids.size(); i++) {
+        memset(data_, i, record_size_);
+        EXPECT_EQ(RC::SUCCESSS, fileHandle_.InsertRec(data_, rids[i]));
+    }
+
+    std::unordered_set<int> deleted { 0, 3, 40, 253, 254, 255, 256, 399 };
+
+    for (int i : deleted) {
+        EXPECT_EQ(RC::SUCCESSS, fileHandle_.DeleteRec(rids[i]));
+        RM_Record rec;
+        EXPECT_EQ(RC::RM_EMPTY_SLOT, fileHandle_.GetRec(rids[i], rec));
+    }
+
+    RID cur(1, -1);
+    for (int i = 0; i < rids.size(); i++) {
+        if (deleted.find(i) != deleted.end())
+            continue;
+        RM_Record rec;
+        EXPECT_EQ(fileHandle_.GetNextRec(cur, rec), RC::SUCCESSS);
+        RID rid;
+        rec.GetRid(rid);
+        EXPECT_EQ(rids[i], rid);
+        cur = rid;
     }
 }

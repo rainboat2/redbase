@@ -32,6 +32,7 @@ public:
     ~RM_FileHandle();
 
     RC GetRec(const RID& rid, RM_Record& rec) const;
+    RC GetNextRec (const RID &rid, RM_Record& rec) const;
     RC InsertRec(const char* pData, RID& rid);
     RC DeleteRec(const RID& rid);
     RC UpdateRec(const RM_Record& rec);
@@ -41,6 +42,7 @@ public:
 
 private:
     RC getFreeSlot(RID& rid);
+    RC isValidSlot(RID& rid);
     RC writeDataToSlot(const char* pData, RID& rid);
     RC AllocateNewPage(PF_PageHandle& page);
     RC MarkPageAsFull(PF_PageHandle& page);

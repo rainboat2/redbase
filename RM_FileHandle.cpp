@@ -9,7 +9,7 @@
         PageNum pageNum;                                                    \
         rid.GetPageNum(pageNum);                                            \
         /* first page is used as header, so pageNum should greater than 0*/ \
-        if (pageNum >= fileHeader_.pageNums || pageNum <= 0)                \
+        if (pageNum >= fileHeader_.pageNums || pageNum <= 0)                 \
             return RC::RM_INVALID_RID;                                      \
         SlotNum slotNum;                                                    \
         rid.GetSlotNum(slotNum);                                            \
@@ -19,6 +19,12 @@
 
 #define SLOT_OFFSET(slotNum) \
     (RM_PageHeader::size(fileHeader_.recordNumsOfEachPage) + slotNum * fileHeader_.recordSize)
+
+#define DECLARE_PAGE_SLOT_NUM_FROM_RID(rid) \
+    PageNum pageNum;                        \
+    SlotNum slotNum;                        \
+    rid.GetPageNum(pageNum);                \
+    rid.GetSlotNum(slotNum);
 
 RM_FileHandle::RM_FileHandle()
     : isOpen_(false)
@@ -39,37 +45,65 @@ RC RM_FileHandle::GetRec(const RID& rid, RM_Record& rec) const
         return RC::RM_FILE_NOT_OPEN;
     RETURN_IF_INVALID_RID(rid);
 
+    DECLARE_PAGE_SLOT_NUM_FROM_RID(rid);
+
     PF_PageHandle page;
-    PageNum pageNum;
-    rid.GetPageNum(pageNum);
     RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.GetThisPage(pageNum, page));
 
     char* data;
     page.GetData(data);
-    SlotNum slotNum;
-    rid.GetSlotNum(slotNum);
-    rec.setData(data + SLOT_OFFSET(slotNum), fileHeader_.recordSize);
-    rec.rid_ = rid;
+    RM_PageHeader* pageHdr = (RM_PageHeader*)data;
+    BitMapWapper bitmap(&pageHdr->bitmap, fileHeader_.recordNumsOfEachPage);
 
-    RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.UnpinPage(pageNum));
-    return RC::SUCCESSS;
+    if (bitmap.get(slotNum) == false) {
+        RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.UnpinPage(pageNum));
+        return RC::RM_EMPTY_SLOT;
+    } else {
+        rec.setData(data + SLOT_OFFSET(slotNum), fileHeader_.recordSize);
+        rec.rid_ = rid;
+        RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.UnpinPage(pageNum));
+        return RC::SUCCESSS;
+    }
+}
+
+RC RM_FileHandle::GetNextRec(const RID& rid, RM_Record& rec) const
+{
+    DECLARE_PAGE_SLOT_NUM_FROM_RID(rid);
+
+    bool find = false;
+    while (!find && pageNum < fileHeader_.pageNums) {
+        while (!find && ++slotNum < fileHeader_.recordNumsOfEachPage) {
+            RID next(pageNum, slotNum);
+            RC rc = GetRec(next, rec);
+            if (rc == RC::SUCCESSS) {
+                rec.rid_ = next;
+                find = true;
+            } else if (rc == RC::RM_EMPTY_SLOT) {
+                find = false;
+            } else {
+                return rc;
+            }
+        }
+        pageNum++;
+        slotNum = -1;
+    }
+    if (find)
+        return RC::SUCCESSS;
+    else
+        return RC::RM_FILE_EOF;
 }
 
 RC RM_FileHandle::InsertRec(const char* pData, RID& rid)
 {
     RETURN_CODE_IF_NOT_SUCCESS(getFreeSlot(rid));
     RETURN_CODE_IF_NOT_SUCCESS(writeDataToSlot(pData, rid));
-    fileHeader_.pageNums++;
     isHeaderChange_ = true;
     return RC::SUCCESSS;
 }
 
 RC RM_FileHandle::DeleteRec(const RID& rid)
 {
-    PageNum pageNum;
-    rid.GetPageNum(pageNum);
-    SlotNum slotNum;
-    rid.GetSlotNum(slotNum);
+    DECLARE_PAGE_SLOT_NUM_FROM_RID(rid);
 
     // getPageData
     PF_PageHandle page;
@@ -84,7 +118,6 @@ RC RM_FileHandle::DeleteRec(const RID& rid)
     bitmap.set(slotNum, false);
     RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.MarkDirty(pageNum));
     RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.UnpinPage(pageNum));
-    fileHeader_.pageNums--;
     isHeaderChange_ = true;
     return RC::SUCCESSS;
 }
@@ -163,6 +196,8 @@ RC RM_FileHandle::AllocateNewPage(PF_PageHandle& page)
     PageNum pageNum;
     page.GetPageNum(pageNum);
     RETURN_CODE_IF_NOT_SUCCESS(pf_fileHandle_.MarkDirty(pageNum));
+    fileHeader_.pageNums++;
+    isHeaderChange_ = true;
     return RC::SUCCESSS;
 }
 

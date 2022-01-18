@@ -43,7 +43,7 @@ RC PF_BufferManager::ReadPage(int fd, PageNum pageNum, char*& data)
 
         // 读取page数据
         char* buffer = buffer_pool_[bufferIndex];
-        RETURN_CODE_IF_NOT_SUCCESS(ReadPageFromFile(fd, pageNum, buffer));
+        RETURN_RC_IF_NOT_SUCCESS(ReadPageFromFile(fd, pageNum, buffer));
     }
 
     auto desc = fileAllocated_[key];

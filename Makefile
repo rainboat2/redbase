@@ -1,5 +1,6 @@
 CC       = g++
-LDFLAGS  = -lpf -lrm -lgtest -lgtest_main -pthread
+LDFLAGS  = -L $(LIB_DIR)
+LIBS     = -lpf -lrm -lgtest -lgtest_main -pthread
 CPPFLAGS = -std=c++14 -g -Wall
 AR       = ar -rc
 RANLIB   = ranlib
@@ -32,10 +33,10 @@ TESTERS = $(TEST_SOURCES:.cpp=)
 all: redbase $(TESTERS)
 
 redbase: $(OBJECTS) $(READBASE_LIBS)
-	$(CC) $(CPPFLAGS) $(LDFLAGS) $(BUILD_DIR)/main.o -L $(LIB_DIR) -o $(TARGET_DIR)/$@
+	$(CC) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $(BUILD_DIR)/main.o -o $(TARGET_DIR)/$@
 
 $(TESTERS): % : $(BUILD_DIR)/%.o ${READBASE_LIBS}
-	$(CC) $(CPPFLAGS) $(LDFLAGS) $< -L $(LIB_DIR) -o $(TARGET_DIR)/$@
+	$(CC) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $(TARGET_DIR)/$@
 
 # generate library file
 $(PF_LIB): $(PF_OBJECTS)

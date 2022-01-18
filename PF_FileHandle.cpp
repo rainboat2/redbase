@@ -69,7 +69,7 @@ RC PF_FileHandle::GetThisPage(PageNum pageNum, PF_PageHandle& pageHandle) const
     RETURN_CODE_IF_PAGE_NUM_INVALID(pageNum);
     RETURN_CODE_IF_FILE_STATUS_INVALID;
     char* data;
-    RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, pageNum, data));
+    RETURN_RC_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, pageNum, data));
 
     PF_PageHeader* header_ = (PF_PageHeader*)data;
     if (header_->nextFree != PageStatus::PF_USED) {
@@ -90,12 +90,12 @@ RC PF_FileHandle::AllocatePage(PF_PageHandle& pageHandle)
     if (header_.nextFree != PageStatus::LIST_END) {
         pageNum = header_.nextFree;
     } else {
-        RETURN_CODE_IF_NOT_SUCCESS(appendFileBlockToEnd());
+        RETURN_RC_IF_NOT_SUCCESS(appendFileBlockToEnd());
         pageNum = header_.pageNum - 1;
     }
 
     char* data;
-    RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, pageNum, data));
+    RETURN_RC_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, pageNum, data));
 
     pageHandle.data_ = data + sizeof(PF_PageHeader);
     pageHandle.pageNum_ = pageNum;
@@ -115,14 +115,14 @@ RC PF_FileHandle::DisposePage(PageNum pageNum)
     RETURN_CODE_IF_PAGE_NUM_INVALID(pageNum);
 
     char* data;
-    RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, pageNum, data));
+    RETURN_RC_IF_NOT_SUCCESS(bufferManager_->ReadPage(fd_, pageNum, data));
     PF_PageHeader* h = (PF_PageHeader*)data;
     h->nextFree = header_.nextFree;
     header_.nextFree = pageNum;
 
     isHeadChange_ = true;
-    RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->MarkDirty(fd_, pageNum));
-    RETURN_CODE_IF_NOT_SUCCESS(bufferManager_->UnpinPage(fd_, pageNum));
+    RETURN_RC_IF_NOT_SUCCESS(bufferManager_->MarkDirty(fd_, pageNum));
+    RETURN_RC_IF_NOT_SUCCESS(bufferManager_->UnpinPage(fd_, pageNum));
     return RC::SUCCESSS;
 }
 

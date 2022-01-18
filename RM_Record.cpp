@@ -14,6 +14,7 @@ RM_Record& RM_Record::operator=(RM_Record &&record){
     data_ = record.data_;
     rid_ = record.rid_;
     record.data_ = nullptr;
+    return *this;
 }
 
 RM_Record::~RM_Record(){

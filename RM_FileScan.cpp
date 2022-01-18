@@ -17,10 +17,10 @@ RC RM_FileScan::OpenScan(
     ClientHint pinHint)
 {
     if (isOpen_)
-        return RC::RM_FILE_SCAN_ALREAD_OPEN;
-    assert((attrType == AttrType::RD_INT && attrLength_ == sizeof(int))
-        || (attrType == AttrType::RD_FLOAT && attrLength_ == sizeof(float))
-        || (attrType == AttrType::RD_STRING && attrLength_ > 0 && attrLength_ < MAX_STRING_LEN));
+        return RC::RM_FILE_SCAN_OPEND;
+    assert((attrType == AttrType::RD_INT && attrLength == sizeof(int))
+        || (attrType == AttrType::RD_FLOAT && attrLength == sizeof(float))
+        || (attrType == AttrType::RD_STRING && attrLength > 0 && attrLength_ < MAX_STRING_LEN));
 
     fileHandle_ = const_cast<RM_FileHandle*>(&fileHandle);
     attrType_ = attrType;
@@ -30,14 +30,17 @@ RC RM_FileScan::OpenScan(
     value_ = value;
     pinHint_ = pinHint;
     cur_ = RID { 1, -1 };
+    isOpen_ = true;
     return RC::SUCCESSS;
 }
 
 RC RM_FileScan::GetNextRec(RM_Record& rec)
 {
+    if (!isOpen_) return RC::RM_FILE_SCAN_CLOSED;
     RM_Record tmp;
     while (true) {
-        RETURN_CODE_IF_NOT_SUCCESS(fileHandle_->GetNextRec(cur_, tmp));
+        RETURN_RC_IF_NOT_SUCCESS(fileHandle_->GetNextRec(cur_, tmp));
+        tmp.GetRid(cur_);
         if (isMatch(tmp)) {
             rec = std::move(tmp);
             break;
@@ -86,5 +89,7 @@ bool RM_FileScan::isMatch(RM_Record& rec)
         COMPARE_VALUE_BY(<);
     case CompOp::NO:
         return true;
+    default:
+        assert(false);
     }
 }

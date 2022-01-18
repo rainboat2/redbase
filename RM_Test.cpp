@@ -175,7 +175,7 @@ protected:
 
 protected:
     const int TEST_RECORD_NUM_ = 2000;
-    const int record_size_ = 16;
+    const int record_size_ = 17;
     char data_[16];
     RM_FileHandle fileHandle_;
     RM_Manager* rm_manager_;
@@ -281,4 +281,56 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_GET_NEXT_TEST)
         EXPECT_EQ(rids[i], rid);
         cur = rid;
     }
+}
+
+class RM_FileScanTest : public testing::Test {
+protected:
+    void SetUp() override
+    {
+        pf_manager_ = new PF_Manager;
+        rm_manager_ = new RM_Manager(*pf_manager_);
+        rm_manager_->CreateFile(TEST_FILE_, record_size_);
+        rm_manager_->OpenFile(TEST_FILE_, fileHandle_);
+    }
+
+    void TearDown() override
+    {
+        rm_manager_->CloseFile(fileHandle_);
+        rm_manager_->DestroyFile(TEST_FILE_);
+        delete rm_manager_;
+        delete pf_manager_;
+    }
+
+protected:
+    const int record_size_ = 17;
+    AttrType type_ = AttrType::RD_INT;
+    int attrLength_ = sizeof(int);
+    int attrOffset_ = sizeof(float);
+    PF_Manager* pf_manager_;
+    RM_Manager* rm_manager_;
+    RM_FileHandle fileHandle_;
+    const char* TEST_FILE_ = "/tmp/RM_FileScanTest";
+};
+
+TEST_F(RM_FileScanTest, GET_NEXT_REC_TEST)
+{
+    char buf[17];
+    const int TEST_RECORD_NUM = 500;
+    for (int i = 0; i < TEST_RECORD_NUM; i++) {
+        int* val = (int*)(buf + attrOffset_);
+        *val = i;
+        RID rid;
+        fileHandle_.InsertRec(buf, rid);
+    }
+
+    RM_FileScan scan;
+    int* val = (int*)(buf + attrOffset_);
+    *val = 250;
+    scan.OpenScan(fileHandle_, type_, attrLength_, attrOffset_, CompOp::EQ, val);
+    RM_Record rec;
+    EXPECT_EQ(scan.GetNextRec(rec), RC::SUCCESSS);
+    char* data;
+    rec.GetData(data);
+    EXPECT_EQ(*((int*)(data + attrOffset_)), 250);
+    EXPECT_EQ(RC::RM_FILE_EOF, scan.GetNextRec(rec));
 }

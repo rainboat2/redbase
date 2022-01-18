@@ -16,11 +16,11 @@ RC RM_Manager::CreateFile(const char* fileName, int recordSize)
         return RC::RM_RECORD_SIZE_TOO_LAGRE;
     }
 
-    RETURN_CODE_IF_NOT_SUCCESS(pf_manager_.CreateFile(fileName));
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CreateFile(fileName));
     PF_FileHandle pfh;
-    RETURN_CODE_IF_NOT_SUCCESS(pf_manager_.OpenFile(fileName, pfh));
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.OpenFile(fileName, pfh));
     PF_PageHandle page;
-    RETURN_CODE_IF_NOT_SUCCESS(pfh.AllocatePage(page));
+    RETURN_RC_IF_NOT_SUCCESS(pfh.AllocatePage(page));
     char* data;
     page.GetData(data);
     RM_FileHeader* rfh = (RM_FileHeader*)data;
@@ -41,11 +41,11 @@ RC RM_Manager::DestroyFile(const char* fileName)
 RC RM_Manager::OpenFile(const char* fileName, RM_FileHandle& fileHandle)
 {
     if (fileHandle.isOpen_)
-        return RC::RM_FILE_ALREAD_OPEN;
+        return RC::RM_FILE_OPEND;
 
-    RETURN_CODE_IF_NOT_SUCCESS(pf_manager_.OpenFile(fileName, fileHandle.pf_fileHandle_));
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.OpenFile(fileName, fileHandle.pf_fileHandle_));
     PF_PageHandle page;
-    RETURN_CODE_IF_NOT_SUCCESS(fileHandle.pf_fileHandle_.GetFirstPage(page));
+    RETURN_RC_IF_NOT_SUCCESS(fileHandle.pf_fileHandle_.GetFirstPage(page));
     fileHandle.isOpen_ = true;
     char *data;
     page.GetData(data);
@@ -54,7 +54,7 @@ RC RM_Manager::OpenFile(const char* fileName, RM_FileHandle& fileHandle)
 
     PageNum pageNum;
     page.GetPageNum(pageNum);
-    RETURN_CODE_IF_NOT_SUCCESS(fileHandle.pf_fileHandle_.UnpinPage(pageNum));
+    RETURN_RC_IF_NOT_SUCCESS(fileHandle.pf_fileHandle_.UnpinPage(pageNum));
     return RC::SUCCESSS;
 }
 
@@ -62,7 +62,7 @@ RC RM_Manager::CloseFile(RM_FileHandle& fileHandle)
 {
     fileHandle.ForcePages(ALL_PAGES);
     fileHandle.ForceHeader();
-    RETURN_CODE_IF_NOT_SUCCESS(pf_manager_.CloseFile(fileHandle.pf_fileHandle_));
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CloseFile(fileHandle.pf_fileHandle_));
     fileHandle.isOpen_ = false;
     return RC::SUCCESSS;
 }

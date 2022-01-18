@@ -41,9 +41,9 @@ enum class RC {
     RM_INVALID_RECORD_SIZE,
     RM_INVALID_RID,
     RM_EMPTY_SLOT,
-    RM_FILE_NOT_OPEN,
-    RM_FILE_ALREAD_OPEN,
-    RM_FILE_SCAN_ALREAD_OPEN,
+    RM_FILE_CLOSED,
+    RM_FILE_OPEND,
+    RM_FILE_SCAN_OPEND,
     RM_FILE_SCAN_CLOSED,
     RM_FILE_EOF,
 
@@ -59,11 +59,11 @@ enum class AttrType {
 
 enum class CompOp {
     EQ,
-    LT,
+    NE,
+    GE,
     GT,
     LE,
-    GE,
-    NE,
+    LT,
     NO
 };
 
@@ -71,11 +71,11 @@ enum class ClientHint {
     NO_HINT
 };
 
-#define RETURN_CODE_IF_NOT_SUCCESS(redbase_call_or_rc) \
-    {                                                  \
-        RC rc = redbase_call_or_rc;                    \
-        if (rc != RC::SUCCESSS)                        \
-            return rc;                                 \
+#define RETURN_RC_IF_NOT_SUCCESS(redbase_call_or_rc) \
+    {                                                \
+        RC rc = redbase_call_or_rc;                  \
+        if (rc != RC::SUCCESSS)                      \
+            return rc;                               \
     }
 
 #endif

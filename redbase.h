@@ -51,7 +51,7 @@ enum class RC {
 
 void PrintError(RC rc);
 
-enum class AttrType {
+enum class AttrType: int {
     RD_INT,
     RD_FLOAT,
     RD_STRING

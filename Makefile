@@ -1,6 +1,6 @@
 CC       = g++
 LDFLAGS  = -L $(LIB_DIR)
-LIBS     = -lpf -lrm -lgtest -lgtest_main -pthread
+LIBS     = -lpf -lrm  -lix -lgtest -lgtest_main -pthread
 CPPFLAGS = -std=c++14 -g -Wall
 AR       = ar -rc
 RANLIB   = ranlib
@@ -13,19 +13,22 @@ TARGET_DIR=bin
 # sources
 PF_SOURCES   = PF_PageHandle.cpp PrintError.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp
 RM_SOURCES   = BitMap.cpp RM_RID.cpp RM_Manager.cpp RM_Record.cpp RM_FileHandle.cpp RM_FileScan.cpp
+IX_SOURCES   = IX_Manager.cpp
 TEST_SOURCES = PF_Test.cpp RM_Test.cpp
-SOURCES      = main.cpp $(PF_SOURCES) $(RM_SOURCES) ${TEST_SOURCES}
+SOURCES      = main.cpp $(PF_SOURCES) $(RM_SOURCES) ${TEST_SOURCES} ${IX_SOURCES}
 
 # objects
 PF_OBJECTS   = $(addprefix $(BUILD_DIR)/, $(PF_SOURCES:cpp=o))
 RM_OBJECTS   = $(addprefix $(BUILD_DIR)/, $(RM_SOURCES:cpp=o))
+IX_OBJECTS   = $(addprefix $(BUILD_DIR)/, $(IX_SOURCES:cpp=o))
 TEST_OBJECTS = $(addprefix ${BUILD_DIR}/, ${TEST_SOURCES:cpp=o})
 OBJECTS      = $(addprefix $(BUILD_DIR)/, $(SOURCES:.cpp=.o))
 
 #libs
 PF_LIB        = $(LIB_DIR)/libpf.a
 RM_LIB        = $(LIB_DIR)/librm.a
-READBASE_LIBS = $(PF_LIB) $(RM_LIB)
+IX_LIB        = $(LIB_DIR)/libix.a
+READBASE_LIBS = $(PF_LIB) $(RM_LIB) $(IX_LIB)
 
 # targets
 TESTERS = $(TEST_SOURCES:.cpp=)
@@ -47,6 +50,9 @@ $(RM_LIB): $(RM_OBJECTS)
 	$(AR) $@ $(RM_OBJECTS)
 	$(RANLIB) $@
 
+$(IX_LIB): $(IX_OBJECTS)
+	$(AR) $@ $(IX_OBJECTS)
+	$(RANLIB) $@
 
 # generate object file
 -include $(OBJECTS:.o=.d)

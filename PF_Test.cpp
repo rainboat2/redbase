@@ -2,7 +2,7 @@
 #include "PF_BufferStrategy.h"
 #include "pf.h"
 #include "PF_Internal.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include <array>
 #include <fcntl.h>
 #include <iostream>

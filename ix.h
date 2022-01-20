@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "pf.h"
+#include "IX_Internal.h"
 #include "redbase.h"
 #include "rm.h"
 
@@ -39,6 +40,14 @@ public:
     RC InsertEntry(void* pData, const RID& rid);
     RC DeleteEntry(void* pData, const RID& rid);
     RC ForcePages();
+
+private:
+    IX_BNodeWapper root_;
+    IX_BFileHeader fileHeader_;
+    bool isHeaderChange_;
+    PF_FileHandle pf_fileHandle_;
+    bool isOpen_;
+
 };
 
 class IX_IndexScan {

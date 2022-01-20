@@ -13,8 +13,8 @@ TARGET_DIR=bin
 # sources
 PF_SOURCES   = PF_PageHandle.cpp PrintError.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp
 RM_SOURCES   = BitMap.cpp RM_RID.cpp RM_Manager.cpp RM_Record.cpp RM_FileHandle.cpp RM_FileScan.cpp
-IX_SOURCES   = IX_Manager.cpp
-TEST_SOURCES = PF_Test.cpp RM_Test.cpp
+IX_SOURCES   = IX_Manager.cpp IX_IndexHandle.cpp IX_BNodeWapper.cpp
+TEST_SOURCES = PF_Test.cpp RM_Test.cpp IX_Test.cpp
 SOURCES      = main.cpp $(PF_SOURCES) $(RM_SOURCES) ${TEST_SOURCES} ${IX_SOURCES}
 
 # objects
@@ -74,3 +74,4 @@ print:
 run_test: $(TESTERS)
 	bin/PF_Test
 	bin/RM_Test
+	bin/IX_Test

@@ -24,7 +24,7 @@ RC IX_Manager::CreateIndex(
 
     // set index head and root page
     setIndexHeader(p0, attrType, attrLength);
-    IX_BNodeWapper::init_node(p1);
+    IX_BNodeWapper::initNode(p1);
 
     PageNum pageNum;
     p0.GetPageNum(pageNum);
@@ -67,7 +67,6 @@ void IX_Manager::setIndexHeader(PF_PageHandle& headerPage,
     hdr->attrLength = attrLength;
     hdr->attrType = attrtype;
     hdr->height = 1;
-    // sizeof(BNode) = sizeof(int) + order * (attrLength) + (order + 1) * sizeof(rid) < PF_PAGE_SIZE
-    hdr->order = (PF_PAGE_SIZE - sizeof(int) - sizeof(RID)) / (attrLength + sizeof(RID));
+    hdr->order = IX_BNodeWapper::countOrder(attrLength);
     hdr->root = { 1, 0 };
 }

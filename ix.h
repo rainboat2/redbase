@@ -3,8 +3,8 @@
 
 #include <memory>
 
-#include "pf.h"
 #include "IX_Internal.h"
+#include "pf.h"
 #include "redbase.h"
 #include "rm.h"
 
@@ -42,12 +42,18 @@ public:
     RC ForcePages();
 
 private:
+    IX_BInsertUpEntry InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
+    void changeRoot(IX_BInsertUpEntry& entry);
+
+    IX_BNodeWapper readBNodeFrom(const RID& rid);
+    IX_BNodeWapper createBNode();
+
+private:
     IX_BNodeWapper root_;
     IX_BFileHeader fileHeader_;
     bool isHeaderChange_;
     PF_FileHandle pf_fileHandle_;
     bool isOpen_;
-
 };
 
 class IX_IndexScan {

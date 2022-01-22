@@ -46,7 +46,8 @@ enum class RC {
     RM_FILE_SCAN_OPEND,
     RM_FILE_SCAN_CLOSED,
     RM_FILE_EOF,
-
+    
+    IX_INDEX_OPEND = 2000,
 };
 
 void PrintError(RC rc);

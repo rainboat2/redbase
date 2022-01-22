@@ -55,8 +55,6 @@ public:
     int notLeafInsert(const IX_BInsertUpEntry &up);
     IX_BInsertUpEntry notLeafSpiltAndInsert(const IX_BInsertUpEntry &up, IX_BNodeWapper &newNode);
 
-
-
 public:
     static void initNode(PF_PageHandle& page);
     static constexpr inline int countOrder(int attrLength)
@@ -66,7 +64,6 @@ public:
     }
 
 private:
-    void swap(int i, int j);
     void spiltInto(IX_BNodeWapper &other, IX_BInsertUpEntry &up, bool isLeaf);
     // insert data to index i
     void insertInto(int i, RID rid);

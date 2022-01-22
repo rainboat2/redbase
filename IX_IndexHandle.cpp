@@ -2,9 +2,20 @@
 
 IX_IndexHandle::IX_IndexHandle()
     : isOpen_(false)
+    , isHeaderChange_(false)
 {
 }
 
+IX_IndexHandle::~IX_IndexHandle()
+{
+    if (isHeaderChange_) {
+        forceHeader();
+    }
+    if (isOpen_) {
+        pf_fileHandle_.UnpinPage(root_.getPageNum());
+        isOpen_ = false;
+    }
+}
 
 RC IX_IndexHandle::InsertEntry(void* pData, const RID& rid)
 {
@@ -14,12 +25,16 @@ RC IX_IndexHandle::InsertEntry(void* pData, const RID& rid)
     return RC::SUCCESSS;
 }
 
-void IX_IndexHandle::changeRoot(IX_BInsertUpEntry &entry){
+void IX_IndexHandle::changeRoot(IX_BInsertUpEntry& entry)
+{
     IX_BNodeWapper newRoot = createBNode();
     newRoot.setAttr(0, entry.attr);
-    newRoot.setRid(0, {root_.getPageNum(), 0});
+    newRoot.setRid(0, { root_.getPageNum(), 0 });
     newRoot.setRid(1, entry.right);
     pf_fileHandle_.UnpinPage(root_.getPageNum());
+    fileHeader_.height += 1;
+    fileHeader_.root = { newRoot.getPageNum(), 0 };
+    isHeaderChange_ = true;
     root_ = newRoot;
 }
 
@@ -80,5 +95,23 @@ IX_BNodeWapper IX_IndexHandle::createBNode()
     char* data;
     page.GetData(data);
     page.GetPageNum(pageNum);
+    
+    fileHeader_.pageNums ++;
+    isHeaderChange_ = true;
     return IX_BNodeWapper(fileHeader_.attrLength, fileHeader_.attrType, data, { pageNum, 0 });
+}
+
+RC IX_IndexHandle::forceHeader()
+{
+    if (!isHeaderChange_)
+        return RC::SUCCESSS;
+    PF_PageHandle page;
+    RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.GetThisPage(0, page));
+    char* data;
+    page.GetData(data);
+    memcpy(data, &fileHeader_, sizeof(IX_BFileHeader));
+    isHeaderChange_ = false;
+    RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.MarkDirty(0));
+    RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.UnpinPage(0));
+    return RC::SUCCESSS;
 }

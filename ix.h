@@ -43,6 +43,7 @@ public:
     RC InsertEntry(void* pData, const RID& rid);
     RC DeleteEntry(void* pData, const RID& rid);
     RC ForcePages();
+    friend class IX_Manager;
 
 private:
     IX_BInsertUpEntry InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
@@ -50,13 +51,14 @@ private:
 
     IX_BNodeWapper readBNodeFrom(const RID& rid);
     IX_BNodeWapper createBNode();
+    RC forceHeader();
 
 private:
     IX_BNodeWapper root_;
     IX_BFileHeader fileHeader_;
-    bool isHeaderChange_;
     PF_FileHandle pf_fileHandle_;
     bool isOpen_;
+    bool isHeaderChange_;
 };
 
 class IX_IndexScan {

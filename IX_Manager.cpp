@@ -38,13 +38,23 @@ RC IX_Manager::CreateIndex(
     return RC::SUCCESSS;
 }
 
+RC IX_Manager::OpenIndex(const char* fileName, int indexNo, IX_IndexHandle& handle)
+{
+    if (handle.isOpen_)
+        return RC::IX_INDEX_OPEND;
+    
+    auto name = getFileName(fileName, indexNo);
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.OpenFile(name.get(), handle.pf_fileHandle_));
+    
+    return RC::SUCCESSS;
+}
+
 RC IX_Manager::DestroyIndex(const char* filename, int indexNo)
 {
     auto name = getFileName(filename, indexNo);
     RETURN_RC_IF_NOT_SUCCESS(pf_manager_.DestroyFile(name.get()));
     return RC::SUCCESSS;
 }
-
 
 std::unique_ptr<char[]> IX_Manager::getFileName(const char* filename, int indexNo)
 {

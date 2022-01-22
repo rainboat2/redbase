@@ -58,7 +58,7 @@ int IX_BNodeWapper::indexOf(const void* pData) const
             rs = tmp;
     }
     // find the first element greater than pdata
-    if (cmp_(pData, getAttr(rs)) > 0)
+    if (rs < size() && cmp_(pData, getAttr(rs)) > 0)
         rs++;
     return rs;
 }
@@ -136,18 +136,6 @@ void IX_BNodeWapper::initNode(PF_PageHandle& page)
     *((int*)data) = 0;
 }
 
-void IX_BNodeWapper::swap(int i, int j)
-{
-    char buffer[MAX_STRING_LEN];
-    memcpy(buffer, getAttr(i), attrLength_);
-    memcpy(getAttr(i), getAttr(j), attrLength_);
-    memcpy(getAttr(j), buffer, attrLength_);
-
-    RID tmp = getRid(i);
-    setRid(i, getRid(j));
-    setRid(j, tmp);
-}
-
 /*
 * suitation 1:
 * order_ = 2 * n + 1, (assume n = 1)
@@ -170,16 +158,17 @@ void IX_BNodeWapper::spiltInto(IX_BNodeWapper& second, IX_BInsertUpEntry& up, bo
     if (isLeaf) {
         *second.size_ = order_ - mid;
         // the last rid point to next sibling, so there is no need to set it here
-        memcpy(second.rids_, rids_ + mid * sizeof(RID), (order_ - mid) * sizeof(RID));
+        memcpy(second.rids_, rids_ + mid, (order_ - mid) * sizeof(RID));
         memcpy(second.attrs_, attrs_ + mid * attrLength_, (order_ - mid) * attrLength_);
     } else {
         *second.size_ = order_ - mid - 1;
         // the rid belong to mid entry should be kept in first node.
-        memcpy(second.rids_, rids_ + (mid + 1) * sizeof(RID), (order_ - mid) * sizeof(RID));
-        memcpy(second.attrs_, attrs_ + (mid + 1) * sizeof(RID), (order_ - mid - 1) * attrLength_);
+        memcpy(second.rids_, rids_ + (mid + 1), (order_ - mid) * sizeof(RID));
+        memcpy(second.attrs_, attrs_ + (mid + 1) * attrLength_, (order_ - mid - 1) * attrLength_);
     }
 
     memcpy(up.attr, getAttr(mid), attrLength_);
+
     up.right = { second.getPageNum(), 0 };
     up.isSpilt = true;
 
@@ -192,8 +181,7 @@ void IX_BNodeWapper::spiltInto(IX_BNodeWapper& second, IX_BInsertUpEntry& up, bo
 
 void IX_BNodeWapper::insertInto(int i, RID rid)
 {
-    assert(*size_ < order_ && i <= *size_);
-    for (int j = *size_; j > i; j++) {
+    for (int j = *size_; j > i; j--) {
         setRid(j, getRid(j - 1));
     }
     setRid(i, rid);
@@ -201,8 +189,7 @@ void IX_BNodeWapper::insertInto(int i, RID rid)
 
 void IX_BNodeWapper::insertInto(int i, char* pData)
 {
-    assert(*size_ < order_ && i <= *size_);
-    for (int j = *size_; j > i; j++) {
+    for (int j = *size_; j > i; j--) {
         setAttr(j, getAttr(j - 1));
     }
     setAttr(i, pData);

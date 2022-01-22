@@ -19,7 +19,6 @@ struct IX_BFileHeader {
 struct IX_BInsertUpEntry{
     bool isSpilt = false;
     char attr[MAX_STRING_LEN];
-    RID left {-1, -1};
     RID right {-1, -1};
 };
 

@@ -180,7 +180,6 @@ void IX_BNodeWapper::spiltInto(IX_BNodeWapper& second, IX_BInsertUpEntry& up, bo
     }
 
     memcpy(up.attr, getAttr(mid), attrLength_);
-    up.left = { getPageNum(), 0 };
     up.right = { second.getPageNum(), 0 };
     up.isSpilt = true;
 

@@ -29,3 +29,7 @@ TEST_F(IX_BNodeWapperTest, INDEX_OF_TEST)
         EXPECT_EQ(node.indexOf(&pair.first), pair.second);
     }
 }
+
+TEST_F(IX_BNodeWapperTest, INSERT_TEST){
+    
+}

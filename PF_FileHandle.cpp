@@ -1,5 +1,5 @@
-#include "pf.h"
 #include "PF_Internal.h"
+#include "pf.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -9,9 +9,9 @@
         return RC::PF_CLOSEDFILE;          \
     }
 
-#define RETURN_CODE_IF_PAGE_NUM_INVALID(pageNum)    \
+#define RETURN_CODE_IF_PAGE_NUM_INVALID(pageNum)     \
     if (pageNum < 0 || pageNum >= header_.pageNum) { \
-        return RC::PF_EOF;                          \
+        return RC::PF_EOF;                           \
     }
 
 PF_FileHandle::PF_FileHandle()
@@ -23,11 +23,13 @@ PF_FileHandle::PF_FileHandle()
 {
 }
 
-PF_FileHandle::~PF_FileHandle(){
-    ForcePages(ALL_PAGES);
-    if (isHeadChange_)
-        ForceHeader();
-    
+PF_FileHandle::~PF_FileHandle()
+{
+    if (isOpen_) {
+        ForcePages(ALL_PAGES);
+        if (isHeadChange_)
+            ForceHeader();
+    }
 }
 
 RC PF_FileHandle::GetFirstPage(PF_PageHandle& pageHandle) const

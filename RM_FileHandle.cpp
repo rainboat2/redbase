@@ -9,7 +9,7 @@
         PageNum pageNum;                                                    \
         rid.GetPageNum(pageNum);                                            \
         /* first page is used as header, so pageNum should greater than 0*/ \
-        if (pageNum >= fileHeader_.pageNums || pageNum <= 0)                 \
+        if (pageNum >= fileHeader_.pageNums || pageNum <= 0)                \
             return RC::RM_INVALID_RID;                                      \
         SlotNum slotNum;                                                    \
         rid.GetSlotNum(slotNum);                                            \
@@ -33,9 +33,11 @@ RM_FileHandle::RM_FileHandle()
 
 RM_FileHandle::~RM_FileHandle()
 {
-    ForcePages(ALL_PAGES);
-    if (isHeaderChange_) {
-        ForceHeader();
+    if (isOpen_) {
+        ForcePages(ALL_PAGES);
+        if (isHeaderChange_) {
+            ForceHeader();
+        }
     }
 }
 

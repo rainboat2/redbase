@@ -37,6 +37,9 @@ class IX_IndexHandle {
 public:
     IX_IndexHandle();
     ~IX_IndexHandle();
+    IX_IndexHandle(const IX_IndexHandle& handle) = delete;
+    IX_IndexHandle& operator=(const IX_IndexHandle& handle) = delete;
+
     RC InsertEntry(void* pData, const RID& rid);
     RC DeleteEntry(void* pData, const RID& rid);
     RC ForcePages();

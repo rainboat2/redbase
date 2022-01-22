@@ -20,20 +20,33 @@ IX_BInsertUpEntry IX_IndexHandle::InsertEntry(IX_BNodeWapper& cur, void* pData, 
         if (upEntry.isSpilt)
             changeRoot(upEntry);
     } else if (level < fileHeader_.height) {
+        // not leaf node
         int index = cur.indexOf(pData);
         IX_BNodeWapper next = readBNodeFrom(cur.getRid(index));
         auto upEntry = InsertEntry(next, pData, rid, level + 1);
         if (upEntry.isSpilt) {
             if (cur.isFull()) {
-
+                IX_BNodeWapper newNode = createBNode();
+                curEntry = cur.notLeafSpiltAndInsert(upEntry, newNode);
+                pf_fileHandle_.MarkDirty(newNode.getPageNum());
+                pf_fileHandle_.UnpinPage(newNode.getPageNum());
             } else {
+                cur.notLeafInsert(upEntry);
             }
-            pf_fileHandle_.MarkDirty(next.getAddrInFile());
+            pf_fileHandle_.MarkDirty(next.getPageNum());
         }
-        pf_fileHandle_.UnpinPage(next.getAddrInFile());
+        pf_fileHandle_.UnpinPage(next.getPageNum());
     } else {
+        // leaf node
+        if (cur.isFull()) {
+            IX_BNodeWapper newNode = createBNode();
+            curEntry = cur.leafSpiltAndInsert(pData, rid, newNode);
+            pf_fileHandle_.MarkDirty(newNode.getPageNum());
+            pf_fileHandle_.UnpinPage(newNode.getPageNum());
+        } else {
+            cur.leafInsert(pData, rid);
+        }
     }
-
     return curEntry;
 }
 

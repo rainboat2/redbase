@@ -5,10 +5,10 @@ CPPFLAGS = -std=c++14 -g -Wall
 AR       = ar -rc
 RANLIB   = ranlib
 
-BUILD_DIR=build
-LIB_DIR=lib
-TEST_DIR=test
-TARGET_DIR=bin
+BUILD_DIR  = build
+LIB_DIR    = lib
+TEST_DIR   = test
+TARGET_DIR = bin
 
 # sources
 PF_SOURCES   = PF_PageHandle.cpp PrintError.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp

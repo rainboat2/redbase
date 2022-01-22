@@ -18,9 +18,9 @@ struct IX_BFileHeader {
 
 struct IX_BInsertUpEntry{
     bool isSpilt = false;
-    char* attr = nullptr;
+    char attr[MAX_STRING_LEN];
     RID left {-1, -1};
-    RID rigth {-1, -1};
+    RID right {-1, -1};
 };
 
 // node: [size, attr0, ...,  attrN, rid0, ..., ridN+1]
@@ -36,9 +36,9 @@ public:
     inline void setRid(int i, RID rid) { rids_[i] = rid; }
     inline RID getRid(int i) const { return rids_[i]; }
     inline void setAttr(int i, void* data) { memcpy(getAttr(i), data, attrLength_); }
-    inline void* getAttr(int i) const { return (char*)attrs_ + attrLength_ * i; }
+    inline void* getAttr(int i) const { return attrs_ + attrLength_ * i; }
 
-    inline PageNum getAddrInFile()
+    inline PageNum getPageNum()
     {
         PageNum num;
         addr_.GetPageNum(num);
@@ -48,9 +48,15 @@ public:
     // return index of pdata in bnode, if pdata not in bnode, return the first index that it's element greater than pdata.
     int indexOf(const void* pData) const;
 
-    // insert a new attr into BNode, return the index of the attr
-    int insert(void* attr, RID rid);
-    IX_BInsertUpEntry insertAndSpilt(void* attr, RID rid, IX_BNodeWapper &newNode, bool isCopyUp);
+    // insert a new attr into BLeafNode, return the index of the attr. return -1 if full.
+    int leafInsert(void* attr, RID left);
+    IX_BInsertUpEntry leafSpiltAndInsert(void* attr, RID rid, IX_BNodeWapper &newNode);
+
+    // insert a up enrty(from child) into node, return the index of the attr, return -1 if full.
+    int notLeafInsert(const IX_BInsertUpEntry &up);
+    IX_BInsertUpEntry notLeafSpiltAndInsert(const IX_BInsertUpEntry &up, IX_BNodeWapper &newNode);
+
+
 
 public:
     static void initNode(PF_PageHandle& page);
@@ -62,10 +68,13 @@ public:
 
 private:
     void swap(int i, int j);
-    void spiltInto(IX_BNodeWapper &other, IX_BInsertUpEntry &up);
+    void spiltInto(IX_BNodeWapper &other, IX_BInsertUpEntry &up, bool isLeaf);
+    // insert data to index i
+    void insertInto(int i, RID rid);
+    void insertInto(int i, char *pData);
 
 private:
-    // data used for assistance
+    // status of bNode
     int attrLength_;
     AttrType attrType_;
     int order_;
@@ -78,7 +87,7 @@ private:
     // pointer to data of bNode
     int* size_;
     RID* rids_;
-    void* attrs_;
+    char* attrs_;
 };
 
 #endif

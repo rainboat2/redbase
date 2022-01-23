@@ -41,11 +41,43 @@ RC IX_Manager::CreateIndex(
 RC IX_Manager::OpenIndex(const char* fileName, int indexNo, IX_IndexHandle& handle)
 {
     if (handle.isOpen_)
-        return RC::IX_INDEX_OPEND;
-    
+        return RC::IX_INDEX_OPENED;
+
     auto name = getFileName(fileName, indexNo);
     RETURN_RC_IF_NOT_SUCCESS(pf_manager_.OpenFile(name.get(), handle.pf_fileHandle_));
-    
+
+    PF_PageHandle headPage, rootPage;
+    char *rootData, *headerData;
+
+    // read header from file
+    headPage.GetData(headerData);
+    RETURN_RC_IF_NOT_SUCCESS(handle.pf_fileHandle_.GetThisPage(0, headPage));
+    memcpy(&handle.fileHeader_, headerData, sizeof(IX_BFileHeader));
+    handle.pf_fileHandle_.UnpinPage(0);
+
+    // read root form file
+    auto& bfh = handle.fileHeader_;
+    PageNum rootPageNum;
+    rootPage.GetPageNum(rootPageNum);
+    RETURN_RC_IF_NOT_SUCCESS(handle.pf_fileHandle_.GetThisPage(rootPageNum, rootPage));
+    rootPage.GetData(rootData);
+    handle.root_ = IX_BNodeWapper(bfh.attrLength, bfh.attrType, rootData, { rootPageNum, 0 });
+
+    handle.isOpen_ = true;
+    return RC::SUCCESSS;
+}
+
+RC IX_Manager::CloseIndex(IX_IndexHandle& handle)
+{
+    if (!handle.isOpen_)
+        return RC::IX_INDEX_CLOSED;
+
+    if (handle.isHeaderChange_)
+        RETURN_RC_IF_NOT_SUCCESS(handle.forceHeader());
+
+    RETURN_RC_IF_NOT_SUCCESS(handle.pf_fileHandle_.UnpinPage(handle.root_.getPageNum()));
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CloseFile(handle.pf_fileHandle_));
+    handle.isOpen_ = false;
     return RC::SUCCESSS;
 }
 

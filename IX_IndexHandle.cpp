@@ -8,13 +8,6 @@ IX_IndexHandle::IX_IndexHandle()
 
 IX_IndexHandle::~IX_IndexHandle()
 {
-    if (isHeaderChange_) {
-        forceHeader();
-    }
-    if (isOpen_) {
-        pf_fileHandle_.UnpinPage(root_.getPageNum());
-        isOpen_ = false;
-    }
 }
 
 RC IX_IndexHandle::InsertEntry(void* pData, const RID& rid)

@@ -17,7 +17,7 @@ RC RM_FileScan::OpenScan(
     ClientHint pinHint)
 {
     if (isOpen_)
-        return RC::RM_FILE_SCAN_OPEND;
+        return RC::RM_FILE_SCAN_OPENED;
     assert((attrType == AttrType::RD_INT && attrLength == sizeof(int))
         || (attrType == AttrType::RD_FLOAT && attrLength == sizeof(float))
         || (attrType == AttrType::RD_STRING && attrLength > 0 && attrLength_ < MAX_STRING_LEN));

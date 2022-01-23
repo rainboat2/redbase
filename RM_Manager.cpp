@@ -41,7 +41,7 @@ RC RM_Manager::DestroyFile(const char* fileName)
 RC RM_Manager::OpenFile(const char* fileName, RM_FileHandle& fileHandle)
 {
     if (fileHandle.isOpen_)
-        return RC::RM_FILE_OPEND;
+        return RC::RM_FILE_OPENED;
 
     RETURN_RC_IF_NOT_SUCCESS(pf_manager_.OpenFile(fileName, fileHandle.pf_fileHandle_));
     PF_PageHandle page;

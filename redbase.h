@@ -42,12 +42,13 @@ enum class RC {
     RM_INVALID_RID,
     RM_EMPTY_SLOT,
     RM_FILE_CLOSED,
-    RM_FILE_OPEND,
-    RM_FILE_SCAN_OPEND,
+    RM_FILE_OPENED,
+    RM_FILE_SCAN_OPENED,
     RM_FILE_SCAN_CLOSED,
     RM_FILE_EOF,
     
-    IX_INDEX_OPEND = 2000,
+    IX_INDEX_OPENED = 2000,
+    IX_INDEX_CLOSED,
 };
 
 void PrintError(RC rc);

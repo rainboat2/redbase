@@ -1,7 +1,7 @@
-#include <unistd.h>
 #include <array>
 #include <gtest/gtest.h>
 #include <iostream>
+#include <unistd.h>
 
 #include "ix.h"
 #include "pf.h"
@@ -119,7 +119,7 @@ TEST_F(IX_BNodeWapperTest, NOT_LEAF_SPLIT_TEST)
     EXPECT_EQ(newNode.size(), (fullSize + 1) / 2);
 }
 
-class IX_IndexHandleTest : public testing::Test {
+class IX_ManagerTest : public testing::Test {
 protected:
     void SetUp() override
     {
@@ -142,13 +142,30 @@ protected:
     const int attrLength_ = sizeof(int);
 };
 
-TEST_F(IX_IndexHandleTest, IX_CREAT_DESTORY_TEST)
+TEST_F(IX_ManagerTest, IX_CREAT_DESTORY_TEST)
 {
+    auto name = ix_manager_->getFileName(TEST_FILE_, INDEX_NO_);
+
     RC rc = ix_manager_->CreateIndex(TEST_FILE_, INDEX_NO_, attrType_, attrLength_);
     EXPECT_EQ(rc, RC::SUCCESSS);
-    PrintError(rc);
-    EXPECT_EQ(0, access(TEST_FILE_, F_OK));
+    EXPECT_EQ(0, access(name.c_str(), F_OK));
+
     rc = ix_manager_->DestroyIndex(TEST_FILE_, INDEX_NO_);
     EXPECT_EQ(rc, RC::SUCCESSS);
-    EXPECT_NE(0, access(TEST_FILE_, F_OK));
+    EXPECT_NE(0, access(name.c_str(), F_OK));
 }
+
+TEST_F(IX_ManagerTest, IX_OPEN_AND_CLOSE_TEST)
+{
+    ix_manager_->CreateIndex(TEST_FILE_, INDEX_NO_, attrType_, attrLength_);
+
+    IX_IndexHandle indexHandle;
+    RC rc = ix_manager_->OpenIndex(TEST_FILE_, INDEX_NO_, indexHandle);
+    EXPECT_EQ(rc, RC::SUCCESSS);
+
+    rc = ix_manager_->CloseIndex(indexHandle);
+    EXPECT_EQ(rc, RC::SUCCESSS);
+
+    ix_manager_->DestroyIndex(TEST_FILE_, INDEX_NO_);
+}
+

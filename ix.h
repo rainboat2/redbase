@@ -1,7 +1,6 @@
 #ifndef IX_HH
 #define IX_HH
 
-#include <memory>
 
 #include "IX_Internal.h"
 #include "pf.h"
@@ -9,6 +8,7 @@
 #include "rm.h"
 
 class IX_IndexHandle;
+class IX_ManagerTest;
 
 class IX_Manager {
 public:
@@ -24,9 +24,9 @@ public:
         int indexNo,
         IX_IndexHandle& indexHandle);
     RC CloseIndex(IX_IndexHandle& indexHandle);
+    std::string getFileName(const char* filename, int indexNo);
 
 private:
-    std::unique_ptr<char[]> getFileName(const char* filename, int indexNo);
     void setIndexHeader(PF_PageHandle& hdaderPage, AttrType attrtype, int attrLength);
 
 private:
@@ -34,6 +34,8 @@ private:
 };
 
 class IX_IndexHandle {
+friend class IX_Manager;
+
 public:
     IX_IndexHandle();
     ~IX_IndexHandle();
@@ -43,7 +45,6 @@ public:
     RC InsertEntry(void* pData, const RID& rid);
     RC DeleteEntry(void* pData, const RID& rid);
     RC ForcePages();
-    friend class IX_Manager;
 
 private:
     IX_BInsertUpEntry InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);

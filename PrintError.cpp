@@ -8,7 +8,7 @@ void PrintError(RC rc)
 {
     static std::unordered_map<RC, const char*> m = {
         { RC::SUCCESSS, "successs!" },
-        { RC::PF_EOF, "end of file!" },
+        { RC::PF_EOF, "PF end of file!" },
         { RC::PF_PAGEPINNED, "page pinned in buffer!" },
         { RC::PF_PAGENOTINBUF, "page to be unpinned is not in buffer!" },
         { RC::PF_PAGEUNPINNED, "page already unpinned!" },

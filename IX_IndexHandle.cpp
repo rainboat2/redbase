@@ -18,6 +18,10 @@ RC IX_IndexHandle::InsertEntry(void* pData, const RID& rid)
     return RC::SUCCESSS;
 }
 
+RC IX_IndexHandle::ForcePages(){
+    RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.ForcePages());
+}
+
 void IX_IndexHandle::changeRoot(IX_BInsertUpEntry& entry)
 {
     IX_BNodeWapper newRoot = createBNode();

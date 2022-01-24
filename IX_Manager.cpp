@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "IX_Internal.h"
 #include "ix.h"
 #include "string.h"
@@ -15,8 +17,8 @@ RC IX_Manager::CreateIndex(
 {
     auto name = getFileName(filename, indexNo);
     PF_FileHandle fhd;
-    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CreateFile(name.get()));
-    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.OpenFile(name.get(), fhd));
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CreateFile(name.c_str()));
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.OpenFile(name.c_str(), fhd));
 
     PF_PageHandle p0, p1;
     RETURN_RC_IF_NOT_SUCCESS(fhd.AllocatePage(p0));
@@ -31,8 +33,8 @@ RC IX_Manager::CreateIndex(
     RETURN_RC_IF_NOT_SUCCESS(fhd.MarkDirty(pageNum));
     RETURN_RC_IF_NOT_SUCCESS(fhd.UnpinPage(pageNum));
     p1.GetPageNum(pageNum);
-    RETURN_RC_IF_NOT_SUCCESS(fhd.UnpinPage(pageNum));
     RETURN_RC_IF_NOT_SUCCESS(fhd.MarkDirty(pageNum));
+    RETURN_RC_IF_NOT_SUCCESS(fhd.UnpinPage(pageNum));
     RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CloseFile(fhd));
 
     return RC::SUCCESSS;
@@ -44,21 +46,21 @@ RC IX_Manager::OpenIndex(const char* fileName, int indexNo, IX_IndexHandle& hand
         return RC::IX_INDEX_OPENED;
 
     auto name = getFileName(fileName, indexNo);
-    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.OpenFile(name.get(), handle.pf_fileHandle_));
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.OpenFile(name.c_str(), handle.pf_fileHandle_));
 
     PF_PageHandle headPage, rootPage;
     char *rootData, *headerData;
 
     // read header from file
-    headPage.GetData(headerData);
     RETURN_RC_IF_NOT_SUCCESS(handle.pf_fileHandle_.GetThisPage(0, headPage));
+    headPage.GetData(headerData);
     memcpy(&handle.fileHeader_, headerData, sizeof(IX_BFileHeader));
     handle.pf_fileHandle_.UnpinPage(0);
 
     // read root form file
     auto& bfh = handle.fileHeader_;
     PageNum rootPageNum;
-    rootPage.GetPageNum(rootPageNum);
+    handle.fileHeader_.root.GetPageNum(rootPageNum);
     RETURN_RC_IF_NOT_SUCCESS(handle.pf_fileHandle_.GetThisPage(rootPageNum, rootPage));
     rootPage.GetData(rootData);
     handle.root_ = IX_BNodeWapper(bfh.attrLength, bfh.attrType, rootData, { rootPageNum, 0 });
@@ -84,20 +86,15 @@ RC IX_Manager::CloseIndex(IX_IndexHandle& handle)
 RC IX_Manager::DestroyIndex(const char* filename, int indexNo)
 {
     auto name = getFileName(filename, indexNo);
-    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.DestroyFile(name.get()));
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.DestroyFile(name.c_str()));
     return RC::SUCCESSS;
 }
 
-std::unique_ptr<char[]> IX_Manager::getFileName(const char* filename, int indexNo)
+std::string IX_Manager::getFileName(const char* filename, int indexNo)
 {
-    // file=filename.indexNo
-    int len = strlen(filename);
-    std::unique_ptr<char[]> name(new char[len + 1 + sizeof(int)]);
-    strcpy(name.get(), filename);
-    name[len] = '.';
-    *((int*)&name[len + 1]) = indexNo;
-    std::cout << name << std::endl;
-    return name;
+    std::stringstream ss;
+    ss << filename << '.' << indexNo;
+    return ss.str();
 }
 
 void IX_Manager::setIndexHeader(PF_PageHandle& headerPage,
@@ -109,6 +106,7 @@ void IX_Manager::setIndexHeader(PF_PageHandle& headerPage,
     auto* hdr = (IX_BFileHeader*)data;
     hdr->attrLength = attrLength;
     hdr->attrType = attrtype;
+    hdr->pageNums = 2;
     hdr->height = 1;
     hdr->order = IX_BNodeWapper::countOrder(attrLength);
     hdr->root = { 1, 0 };

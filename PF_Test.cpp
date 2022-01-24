@@ -131,6 +131,32 @@ TEST_F(PF_ManagerTest, PF_MANAGER_BLOCK)
     }
 }
 
+TEST_F(PF_ManagerTest, PF_MANAGER_PRESISTENCE){
+   manager_.CreateFile(TEST_FILE_);
+
+    PF_FileHandle fileHandle;
+    manager_.OpenFile(TEST_FILE_, fileHandle);
+
+    PF_PageHandle p0, p1;
+    fileHandle.AllocatePage(p0);
+    fileHandle.AllocatePage(p1);
+
+    PageNum pageNum;
+    p0.GetPageNum(pageNum);
+    fileHandle.MarkDirty(pageNum);
+    fileHandle.UnpinPage(pageNum);
+    p1.GetPageNum(pageNum);
+    fileHandle.MarkDirty(pageNum);
+    fileHandle.UnpinPage(pageNum);
+
+    manager_.CloseFile(fileHandle);
+
+    manager_.OpenFile(TEST_FILE_, fileHandle);
+    EXPECT_EQ(RC::SUCCESSS, fileHandle.GetThisPage(0, p0));
+    EXPECT_EQ(RC::SUCCESSS, fileHandle.GetThisPage(1, p1));
+    manager_.DestroyFile(TEST_FILE_);
+}
+
 class PF_FileHandleTest : public testing::Test {
 protected:
     void SetUp() override

@@ -136,7 +136,7 @@ protected:
 protected:
     IX_Manager* ix_manager_;
     PF_Manager* pf_manager_;
-    const char* TEST_FILE_ = "/tmp/IX_INDEX_HANDLE_TEST_";
+    const char* TEST_FILE_ = "/tmp/IX_MANAGER_HANDLE_TEST_";
     const int INDEX_NO_ = 2233;
     const AttrType attrType_ = AttrType::RD_INT;
     const int attrLength_ = sizeof(int);
@@ -169,3 +169,37 @@ TEST_F(IX_ManagerTest, IX_OPEN_AND_CLOSE_TEST)
     ix_manager_->DestroyIndex(TEST_FILE_, INDEX_NO_);
 }
 
+class IX_IndexHandleTest : public testing::Test {
+protected:
+    void SetUp() override
+    {
+        pf_manager_ = new PF_Manager;
+        ix_manager_ = new IX_Manager(*pf_manager_);
+        ix_manager_->CreateIndex(TEST_FILE_, INDEX_NO_, attrType_, attrLength_);
+        ix_manager_->OpenIndex(TEST_FILE_, INDEX_NO_, indexHandle_);
+    }
+
+    void TearDown() override
+    {
+        ix_manager_->CloseIndex(indexHandle_);
+        ix_manager_->DestroyIndex(TEST_FILE_, INDEX_NO_);
+        delete ix_manager_;
+        delete pf_manager_;
+    }
+
+protected:
+    PF_Manager* pf_manager_;
+    IX_Manager* ix_manager_;
+    IX_IndexHandle indexHandle_;
+    const char* TEST_FILE_ = "/tmp/IX_INDEX_HANDLE_TEST_";
+    const int INDEX_NO_ = 2233;
+    const AttrType attrType_ = AttrType::RD_INT;
+    const int attrLength_ = sizeof(int);
+};
+
+TEST_F(IX_IndexHandleTest, IX_INDEX_INSERT_TEST){
+    for (int i = 0; i < 3400; i++){
+        RC rc = indexHandle_.InsertEntry(&i, {i, i});
+        EXPECT_EQ(rc, RC::SUCCESSS);
+    }
+}

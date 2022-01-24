@@ -16,10 +16,10 @@ struct IX_BFileHeader {
     RID root;
 };
 
-struct IX_BInsertUpEntry{
+struct IX_BInsertUpEntry {
     bool isSpilt = false;
     char attr[MAX_STRING_LEN];
-    RID right {-1, -1};
+    RID right { -1, -1 };
 };
 
 // node: [size, attr0, ...,  attrN, rid0, ..., ridN+1]
@@ -44,16 +44,16 @@ public:
         return num;
     }
 
-    // return index of pdata in bnode, if pdata not in bnode, return the first index that it's element greater than pdata.
+    // return the first index that it's element greater or equal than pdata.
     int indexOf(const void* pData) const;
 
     // insert a new attr into BLeafNode, return the index of the attr. return -1 if full.
     int leafInsert(void* attr, RID left);
-    IX_BInsertUpEntry leafSpiltAndInsert(void* attr, RID rid, IX_BNodeWapper &newNode);
+    IX_BInsertUpEntry leafSpiltAndInsert(void* attr, RID rid, IX_BNodeWapper& newNode);
 
     // insert a up enrty(from child) into node, return the index of the attr, return -1 if full.
-    int notLeafInsert(const IX_BInsertUpEntry &up);
-    IX_BInsertUpEntry notLeafSpiltAndInsert(const IX_BInsertUpEntry &up, IX_BNodeWapper &newNode);
+    int notLeafInsert(const IX_BInsertUpEntry& up);
+    IX_BInsertUpEntry notLeafSpiltAndInsert(const IX_BInsertUpEntry& up, IX_BNodeWapper& newNode);
 
 public:
     static void initNode(PF_PageHandle& page);
@@ -64,10 +64,10 @@ public:
     }
 
 private:
-    void spiltInto(IX_BNodeWapper &other, IX_BInsertUpEntry &up, bool isLeaf);
+    void spiltInto(IX_BNodeWapper& other, IX_BInsertUpEntry& up, bool isLeaf);
     // insert data to index i
     void insertInto(int i, RID rid);
-    void insertInto(int i, char *pData);
+    void insertInto(int i, char* pData);
 
 private:
     // status of bNode

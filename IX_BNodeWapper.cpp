@@ -57,7 +57,7 @@ int IX_BNodeWapper::indexOf(const void* pData) const
         else
             rs = tmp;
     }
-    // find the first element greater than pdata
+    // if not equal, find the first element greater than pdata
     if (rs < size() && cmp_(pData, getAttr(rs)) > 0)
         rs++;
     return rs;

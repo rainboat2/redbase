@@ -96,6 +96,7 @@ std::unique_ptr<char[]> IX_Manager::getFileName(const char* filename, int indexN
     strcpy(name.get(), filename);
     name[len] = '.';
     *((int*)&name[len + 1]) = indexNo;
+    std::cout << name << std::endl;
     return name;
 }
 

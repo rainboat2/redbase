@@ -35,13 +35,12 @@ RC PF_BufferManager::ReadPage(int fd, PageNum pageNum, char*& data)
     BufferKey key { fd, pageNum };
 
     if (fileAllocated_.find(key) == fileAllocated_.end()) {
-        // 没有为此页面分配缓存，现在分配一个
+        // if page data not in buffer, allocate buffer for this page
         int bufferIndex = getFreeBuffer();
         if (bufferIndex < 0)
             return RC::PF_NOBUF;
         fileAllocated_[key] = std::make_shared<BufferBlockDesc>(fd, pageNum, bufferIndex, 0, false);
 
-        // 读取page数据
         char* buffer = buffer_pool_[bufferIndex];
         RETURN_RC_IF_NOT_SUCCESS(ReadPageFromFile(fd, pageNum, buffer));
     }
@@ -52,9 +51,9 @@ RC PF_BufferManager::ReadPage(int fd, PageNum pageNum, char*& data)
     return RC::SUCCESSS;
 }
 
-RC PF_BufferManager::MarkDirty(int fd, PageNum PageNum)
+RC PF_BufferManager::MarkDirty(int fd, PageNum pageNum)
 {
-    BufferKey key { fd, PageNum };
+    BufferKey key { fd, pageNum };
     RETURN_ERROR_IF_NOT_PIN(key);
     auto desc = fileAllocated_[key];
     desc->isDirty = true;
@@ -124,10 +123,10 @@ int PF_BufferManager::getFreeBuffer()
         rs = freeBuffers_.back();
         freeBuffers_.pop_back();
     } else if (!unpinDispatcher_->empty()) {
-        // 基于调度策略，淘汰unpin的page，腾出空间
+        // based on buffer strategy, swap out the page
         const auto key = unpinDispatcher_->pop();
         const auto desc = fileAllocated_[key];
-        rs = desc->fd;
+        rs = desc->bufferIndex;
         fileAllocated_.erase(key);
     }
     return rs;

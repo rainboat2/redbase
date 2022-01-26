@@ -18,7 +18,8 @@ RC IX_IndexHandle::InsertEntry(void* pData, const RID& rid)
     return RC::SUCCESSS;
 }
 
-RC IX_IndexHandle::ForcePages(){
+RC IX_IndexHandle::ForcePages()
+{
     RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.ForcePages());
     return RC::SUCCESSS;
 }
@@ -41,7 +42,17 @@ IX_BInsertUpEntry IX_IndexHandle::InsertEntry(IX_BNodeWapper& cur, void* pData, 
     assert(level <= fileHeader_.height && level >= 0);
 
     IX_BInsertUpEntry curEntry;
-    if (level < fileHeader_.height) {
+    if (level == fileHeader_.height - 1) {
+        // leaf node
+        if (cur.isFull()) {
+            IX_BNodeWapper newNode = createBNode();
+            curEntry = cur.leafSpiltAndInsert(pData, rid, newNode);
+            pf_fileHandle_.MarkDirty(newNode.getPageNum());
+            pf_fileHandle_.UnpinPage(newNode.getPageNum());
+        } else {
+            cur.leafInsert(pData, rid);
+        }
+    } else {
         // not leaf node
         int index = cur.indexOf(pData);
         IX_BNodeWapper next = readBNodeFrom(cur.getRid(index));
@@ -58,16 +69,6 @@ IX_BInsertUpEntry IX_IndexHandle::InsertEntry(IX_BNodeWapper& cur, void* pData, 
             pf_fileHandle_.MarkDirty(next.getPageNum());
         }
         pf_fileHandle_.UnpinPage(next.getPageNum());
-    } else {
-        // leaf node
-        if (cur.isFull()) {
-            IX_BNodeWapper newNode = createBNode();
-            curEntry = cur.leafSpiltAndInsert(pData, rid, newNode);
-            pf_fileHandle_.MarkDirty(newNode.getPageNum());
-            pf_fileHandle_.UnpinPage(newNode.getPageNum());
-        } else {
-            cur.leafInsert(pData, rid);
-        }
     }
     return curEntry;
 }
@@ -93,8 +94,8 @@ IX_BNodeWapper IX_IndexHandle::createBNode()
     char* data;
     page.GetData(data);
     page.GetPageNum(pageNum);
-    
-    fileHeader_.pageNums ++;
+
+    fileHeader_.pageNums++;
     isHeaderChange_ = true;
     return IX_BNodeWapper(fileHeader_.attrLength, fileHeader_.attrType, data, { pageNum, 0 });
 }

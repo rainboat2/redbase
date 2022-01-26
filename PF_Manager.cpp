@@ -23,7 +23,7 @@ RC PF_Manager::CreateFile(const char* filename)
     int fd = open(filename, O_RDWR | O_CREAT | O_EXCL, 0644);
     PF_UNIX_RETURN_IF_ERROR(fd);
 
-    // header虽然不大，但使用一个Block大小来存储header
+    // header only take a small palce，but we still use a block to store header
     char buffer[PF_FILE_HEADER_SIZE];
     memset(buffer, 0, PF_FILE_BLOCK_SIZE);
     PF_FileHeader* header = (PF_FileHeader*)buffer;

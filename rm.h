@@ -32,7 +32,7 @@ public:
     ~RM_FileHandle();
 
     RC GetRec(const RID& rid, RM_Record& rec) const;
-    RC GetNextRec (const RID &rid, RM_Record& rec) const;
+    RC GetNextRec(const RID& rid, RM_Record& rec) const;
     RC InsertRec(const char* pData, RID& rid);
     RC DeleteRec(const RID& rid);
     RC UpdateRec(const RM_Record& rec);
@@ -70,10 +70,10 @@ public:
     RC CloseScan();
 
 private:
-    bool isMatch(RM_Record &rec);
+    bool isMatch(RM_Record& rec);
 
 private:
-    RM_FileHandle *fileHandle_;
+    RM_FileHandle* fileHandle_;
     bool isOpen_;
     AttrType attrType_;
     int attrLength_;
@@ -89,10 +89,9 @@ public:
     RM_Record();
     ~RM_Record();
     RM_Record(const RM_Record& record) = delete;
-    RM_Record(RM_Record &&record);
-    RM_Record& operator=(const RM_Record &record) = delete;
-    RM_Record& operator=(RM_Record &&record);
-
+    RM_Record(RM_Record&& record);
+    RM_Record& operator=(const RM_Record& record) = delete;
+    RM_Record& operator=(RM_Record&& record);
 
     // Set pData to point to the record's contents
     RC GetData(char*& pData) const;

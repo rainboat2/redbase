@@ -47,8 +47,8 @@ RC PF_FileHandle::GetNextPage(PageNum current, PF_PageHandle& pageHandle) const
     RC rc;
     while (true) {
         rc = GetThisPage(++current, pageHandle);
-        // PF_INVALIDPAGE说明读到的page是被删除了的page，应该跳过继续找
-        // 其他类型的rc要么说明出错，要么成功找到，都应该直接返回。
+        // PF_INVALIDPAGE indicate that the page we read is deleted, just skip it.
+        // for other return code, such as success, PF_EOF, just return
         if (rc != RC::PF_INVALIDPAGE)
             break;
     }
@@ -88,7 +88,7 @@ RC PF_FileHandle::AllocatePage(PF_PageHandle& pageHandle)
     RETURN_CODE_IF_FILE_STATUS_INVALID;
     PageNum pageNum;
 
-    // 获取空闲的page
+    // get Free page
     if (header_.nextFree != PageStatus::LIST_END) {
         pageNum = header_.nextFree;
     } else {

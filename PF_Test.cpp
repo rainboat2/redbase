@@ -1,10 +1,10 @@
 #include "PF_BufferManager.h"
 #include "PF_BufferStrategy.h"
-#include "pf.h"
 #include "PF_Internal.h"
-#include <gtest/gtest.h>
+#include "pf.h"
 #include <array>
 #include <fcntl.h>
+#include <gtest/gtest.h>
 #include <iostream>
 #include <stack>
 #include <stdlib.h>
@@ -19,7 +19,7 @@ protected:
         keys[1] = { 0, 2147483647 };
         keys[2] = { 2147483647, 0 };
         for (size_t i = 3; i < keys.size(); i++) {
-            keys[i] = { (int) i, (int) i };
+            keys[i] = { (int)i, (int)i };
         }
     }
 
@@ -131,8 +131,9 @@ TEST_F(PF_ManagerTest, PF_MANAGER_BLOCK)
     }
 }
 
-TEST_F(PF_ManagerTest, PF_MANAGER_PRESISTENCE){
-   manager_.CreateFile(TEST_FILE_);
+TEST_F(PF_ManagerTest, PF_MANAGER_PRESISTENCE)
+{
+    manager_.CreateFile(TEST_FILE_);
 
     PF_FileHandle fileHandle;
     manager_.OpenFile(TEST_FILE_, fileHandle);
@@ -193,7 +194,7 @@ TEST_F(PF_FileHandleTest, PAGE_ALLOCAGE_AND_DISPOSE)
         EXPECT_EQ(RC::SUCCESSS, handle_.AllocatePage(pageHandle));
     }
 
-    std::vector<int> delete_seq { 0, 39, 1, 38 };
+    std::vector<int> delete_seq { 0, 19, 1, 18 };
     std::stack<int> free_page;
     for (auto d : delete_seq) {
         handle_.DisposePage(d);
@@ -217,7 +218,6 @@ TEST_F(PF_FileHandleTest, PAGE_ALLOCAGE_AND_DISPOSE)
         EXPECT_EQ(RC::SUCCESSS, handle_.AllocatePage(pageHandle));
         PageNum pageNum;
         pageHandle.GetPageNum(pageNum);
-        EXPECT_EQ(40, PF_BUFFER_SIZE);
     }
 }
 
@@ -253,7 +253,7 @@ TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST)
             for (int j = 0; j < PF_PAGE_SIZE; j++)
                 EXPECT_EQ(i, data[j]);
         }
-         EXPECT_EQ(RC::PF_EOF, handle_.GetNextPage(pageNum, pageHandle));
+        EXPECT_EQ(RC::PF_EOF, handle_.GetNextPage(pageNum, pageHandle));
     }
 
     {
@@ -273,5 +273,39 @@ TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST)
             for (int j = 0; j < PF_PAGE_SIZE; j++)
                 EXPECT_EQ(i, data[j]);
         }
+    }
+}
+
+class PF_BufferManagerTest: public testing::Test{
+protected:
+    void SetUp() override {
+        fd_ = open(TEST_FILE_, O_CREAT | O_RDWR);
+        char buffer[PF_PAGE_SIZE];
+
+        for (int i = 0; i < PF_BUFFER_SIZE * 5; i++){
+            memset(buffer, i, PF_PAGE_SIZE);
+            write(fd_, buffer, PF_PAGE_SIZE);
+        }
+    }
+    void TearDown() override {
+        close(fd_);
+        unlink(TEST_FILE_);
+    }
+
+protected:
+    int fd_;
+    const char* TEST_FILE_ = "/tmp/PF_BUFFER_MANAGER_TEST";
+    PF_BufferManager bufferManager_;
+};
+
+TEST_F(PF_BufferManagerTest, BUFFER_TEST){
+    for (int i = 0; i < PF_BUFFER_SIZE * - 1; i++){
+        char *data;
+        RC rc =bufferManager_.ReadPage(fd_, i, data);
+        EXPECT_EQ(rc, RC::SUCCESSS);
+        rc = bufferManager_.MarkDirty(fd_, i);
+        EXPECT_EQ(rc, RC::SUCCESSS);
+        rc = bufferManager_.UnpinPage(fd_, i);
+        EXPECT_EQ(rc, RC::SUCCESSS);
     }
 }

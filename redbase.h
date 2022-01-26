@@ -1,7 +1,7 @@
 #ifndef REDBASE_HH
 #define REDBASE_HH
 
-#define MAX_STRING_LEN 255
+#define MAX_STRING_LEN 2048
 
 enum PageStatus : int {
     LIST_END = -1,

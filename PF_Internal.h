@@ -11,9 +11,8 @@ using PageNum = int;
 #define PF_FILE_HEADER_SIZE 4096
 #define PF_PAGE_OFFSET(pageNum) (pageNum * PF_FILE_BLOCK_SIZE + PF_FILE_HEADER_SIZE)
 
-
 struct PF_PageHeader {
-    // 大于0的时候表示下一个free page，小于0表示page的状态
+    // stand for pageNum of next free page if greater then 0，otherwise page status
     int nextFree;
 };
 
@@ -21,7 +20,6 @@ struct PF_FileHeader {
     int nextFree;
     PageNum pageNum;
 };
-
 
 #define PF_UNIX_RETURN_IF_ERROR(sys_lib_call_or_return_value) \
     {                                                         \
@@ -31,6 +29,5 @@ struct PF_FileHeader {
             return RC::PF_UNIX;                               \
         }                                                     \
     }
-
 
 #endif

@@ -18,7 +18,6 @@ public:
 
 /*
  * least recent used.
- * 优先淘汰最长时间没有使用的元素
  */
 template <typename T, typename hash>
 class LRU : public BufferStrategy<T> {

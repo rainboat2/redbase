@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
-// 在Buffer中，使用fd和pageNum来唯一确定一个buffer块
+// use (fd, pageNum) to identifiy a buffer block
 struct BufferKey {
     int fd;
     PageNum pageNum;

@@ -1,6 +1,8 @@
 #ifndef REDBASE_HH
 #define REDBASE_HH
 
+#include <functional>
+
 #define MAX_STRING_LEN 2048
 
 enum PageStatus : int {
@@ -68,6 +70,8 @@ enum class CompOp {
     LT,
     NO
 };
+
+std::function<int(const void* d1, const void* d2)> getComparator(AttrType attrType, int attrLength);
 
 enum class ClientHint {
     NO_HINT

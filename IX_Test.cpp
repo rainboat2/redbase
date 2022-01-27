@@ -198,7 +198,7 @@ protected:
 };
 
 TEST_F(IX_IndexHandleTest, IX_INDEX_INSERT_TEST){
-    for (int i = 0; i < 34000; i++){
+    for (int i = 34000; i >= 0; i--){
         RC rc = indexHandle_.InsertEntry(&i, {i, i});
         EXPECT_EQ(rc, RC::SUCCESSS);
     }

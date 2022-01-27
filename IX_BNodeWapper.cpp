@@ -1,27 +1,5 @@
 #include "IX_Internal.h"
 
-int int_cmp(const void* d1, const void* d2)
-{
-    int v1 = *((int*)d1), v2 = *((int*)d2);
-    if (v1 == v2)
-        return 0;
-    else if (v1 > v2)
-        return 1;
-    else
-        return -1;
-}
-
-int float_cmp(const void* d1, const void* d2)
-{
-    float f1 = *((float*)d1), f2 = *((int*)d2);
-    if (f1 == f2)
-        return 0;
-    else if (f1 > f2)
-        return 1;
-    else
-        return -1;
-}
-
 IX_BNodeWapper::IX_BNodeWapper(int attrLength, AttrType attrType, char* nodeData, RID addr)
     : attrLength_(attrLength)
     , attrType_(attrType)
@@ -32,15 +10,7 @@ IX_BNodeWapper::IX_BNodeWapper(int attrLength, AttrType attrType, char* nodeData
     , rids_((RID*)(raw_data_ + sizeof(int) + attrLength * order_))
     , attrs_(raw_data_ + sizeof(int))
 {
-    if (attrType_ == AttrType::RD_INT) {
-        cmp_ = int_cmp;
-    } else if (attrType_ == AttrType::RD_FLOAT) {
-        cmp_ = float_cmp;
-    } else {
-        cmp_ = [attrLength](const void* d1, const void* d2) {
-            return strncmp((char*)d1, (char*)d2, attrLength);
-        };
-    }
+    cmp_ = getComparator(attrType_, attrLength_);
 }
 
 int IX_BNodeWapper::indexOf(const void* pData) const

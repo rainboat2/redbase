@@ -64,29 +64,21 @@ bool RM_FileScan::isMatch(RM_Record& rec)
     char* buf_;
     rec.GetData(buf_);
     char* val = buf_ + attrOffset_;
-
-#define COMPARE_VALUE_BY(op)                                  \
-    if (attrType_ == AttrType::RD_INT) {                      \
-        return (*(int*)val)op(*(int*)value_);                 \
-    } else if (attrType_ == AttrType::RD_FLOAT) {             \
-        return (*(float*)val)op(*(float*)value_);             \
-    } else {                                                  \
-        return strncmp(val, (char*)value_, attrLength_) op 0; \
-    }
+    auto cmp = getComparator(attrType_, attrLength_);
 
     switch (compOp_) {
     case CompOp::EQ:
-        COMPARE_VALUE_BY(==);
+        return cmp(val, value_) == 0;
     case CompOp::NE:
-        COMPARE_VALUE_BY(!=);
+        return cmp(val, value_) != 0;
     case CompOp::GE:
-        COMPARE_VALUE_BY(>=);
+        return cmp(val, value_) >= 0;
     case CompOp::GT:
-        COMPARE_VALUE_BY(>);
+        return cmp(val, value_) > 0;
     case CompOp::LE:
-        COMPARE_VALUE_BY(<=);
+        return cmp(val, value_) <= 0;
     case CompOp::LT:
-        COMPARE_VALUE_BY(<);
+        return cmp(val, value_) < 0;
     case CompOp::NO:
         return true;
     default:

@@ -1,7 +1,6 @@
 #ifndef IX_HH
 #define IX_HH
 
-
 #include "IX_Internal.h"
 #include "pf.h"
 #include "redbase.h"
@@ -9,6 +8,7 @@
 
 class IX_IndexHandle;
 class IX_ManagerTest;
+class IX_IndexScan;
 
 class IX_Manager {
 public:
@@ -34,7 +34,8 @@ private:
 };
 
 class IX_IndexHandle {
-friend class IX_Manager;
+    friend class IX_Manager;
+    friend class IX_IndexScan;
 
 public:
     IX_IndexHandle();
@@ -49,7 +50,6 @@ public:
 private:
     IX_BInsertUpEntry InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
     void changeRoot(IX_BInsertUpEntry& entry);
-
     IX_BNodeWapper readBNodeFrom(const RID& rid);
     IX_BNodeWapper createBNode();
     RC forceHeader();
@@ -72,6 +72,13 @@ public:
         ClientHint pinHint = ClientHint::NO_HINT);
     RC GetNextEntry(RID& rid);
     RC CloseScan();
+
+private:
+    bool isOpen_;
+    IX_IndexHandle *indexHandle_;
+    std::function<int(const void* d1, const void* d2)> cmp_;
+    void* value_;
+    ClientHint pinHint_;
 };
 
 #endif

@@ -16,6 +16,7 @@ RC IX_IndexScan::OpenScan(const IX_IndexHandle& indexHandle,
     if (isOpen_)
         return RC::IX_INDEX_SCAN_OPENED;
     const IX_BFileHeader& fileHeader = indexHandle.fileHeader_;
+    indexHandle_ = const_cast<IX_IndexHandle*>(&indexHandle);
     cmp_ = getComparator(fileHeader.attrType, fileHeader.attrLength);
     compOp_ = compOp;
     value_ = value;
@@ -74,14 +75,14 @@ RC IX_IndexScan::GetNextEntry(RID& rid)
     case CompOp::LE: {
         if (moveToNextEntry()) {
             EXTRACT_SLOT_NUM(nextSlot, cur_);
-            hasNext_ = (cmp_(value_, curNode_.getAttr(nextSlot)) <= 0);
+            hasNext_ = (cmp_(curNode_.getAttr(nextSlot), value_) <= 0);
         }
         break;
     }
     case CompOp::LT: {
         if (moveToNextEntry()) {
             EXTRACT_SLOT_NUM(nextSlot, cur_);
-            hasNext_ = (cmp_(value_, curNode_.getAttr(nextSlot)) < 0);
+            hasNext_ = (cmp_(curNode_.getAttr(nextSlot), value_) < 0);
         }
         break;
     }
@@ -125,7 +126,7 @@ bool IX_IndexScan::moveToNextEntry()
     bool isMove = true;
     if (slotNum + 1 == curNode_.size()) {
         if (curNode_.lastRid() == NULL_RID) {
-            isMove = isOpen_ = false;
+            isMove = hasNext_ = false;
         } else {
             RID next = curNode_.lastRid();
             indexHandle_->unpinNode(curNode_);

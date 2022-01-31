@@ -159,7 +159,7 @@ void IX_BNodeWapper::spiltInto(IX_BNodeWapper& second, IX_BInsertUpEntry& up, bo
 
     if (isLeaf) {
         // set next sibling
-        second.rids_[order_] = { getPageNum(), NULL_SLOT_NUM };
+        second.rids_[order_] = lastRid();
         rids_[order_] = { second.getPageNum(), NULL_SLOT_NUM };
     }
 }

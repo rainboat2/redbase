@@ -35,9 +35,10 @@ RC IX_IndexHandle::GetLeafEntryAddrEqualTo(void* pData, RID& rid) const
 
 RC IX_IndexHandle::GetLeafEntryAddrGreatThen(void* pData, RID& rid) const
 {
-    return getLeafBy(pData, rid, [](void* pData, IX_BNodeWapper& cur) {
+    RC rc = getLeafBy(pData, rid, [](void* pData, IX_BNodeWapper& cur) {
         return cur.getRid(cur.upperBound(pData));
     });
+    RETURN_RC_IF_NOT_SUCCESS(rc);
     // getLeafBy only find leaf node, we need to find slotNum that it's data first large than pData
     auto leaf = readBNodeFrom(rid);
     SlotNum slot = leaf.upperBound(pData);
@@ -63,14 +64,15 @@ RC IX_IndexHandle::getLeafBy(void* pData, RID& rid, std::function<RID(void*, IX_
     RID nextAddr;
     for (int i = 0; i < fileHeader_.height; i++) {
         nextAddr = getNext(pData, cur);
+        if (i == fileHeader_.height - 1)
+            rid = RID(cur.getPageNum(), 0);
+
         // if not root_, unpin page
         if (i != 0)
             RETURN_RC_IF_NOT_SUCCESS(unpinNode(cur));
 
         if (i != fileHeader_.height - 1)
             cur = readBNodeFrom(nextAddr);
-        else
-            rid = nextAddr;
     }
     return RC::SUCCESSS;
 }

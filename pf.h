@@ -6,6 +6,7 @@
 #include "PF_Internal.h"
 
 using PageNum = int;
+#define NULL_PAGE_NUM -1
 #define ALL_PAGES -1
 #define PF_PAGE_SIZE 4096 - sizeof(int)
 

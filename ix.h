@@ -50,9 +50,9 @@ public:
     RC GetLeafEntryAddrEqualTo(void* pData, RID& rid) const;
 
     // find leaf node that element greater than pData first appear
-    RC GetLeafAddrGreatThen(void* pData, RID& rid) const;
+    RC GetLeafEntryAddrGreatThen(void* pData, RID& rid) const;
     // find first leaf node
-    RC GetFirstLeafAddr(RID& rid) const;
+    RC GetFirstLeafEntryAddr(RID& rid) const;
     RC ForcePages();
 
 private:
@@ -65,7 +65,7 @@ private:
     IX_BNodeWapper createBNode();
 
     RC forceHeader();
-    inline RC unpinNode(IX_BNodeWapper& node) { return pf_fileHandle_.UnpinPage(node.getPageNum()); }
+    inline RC unpinNode(IX_BNodeWapper& node) const { return pf_fileHandle_.UnpinPage(node.getPageNum()); }
 
 private:
     IX_BNodeWapper root_;
@@ -88,10 +88,11 @@ public:
 
 private:
     RC findFirstNode();
-    bool moveToNext();
+    bool moveToNextEntry();
 
 private:
     bool isOpen_;
+    bool hasNext_;
     IX_IndexHandle* indexHandle_;
     std::function<int(const void*, const void*)> cmp_;
     CompOp compOp_;

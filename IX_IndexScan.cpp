@@ -21,7 +21,8 @@ RC IX_IndexScan::OpenScan(const IX_IndexHandle& indexHandle,
     value_ = value;
     pinHint_ = pinHint;
     isOpen_ = true;
-    findFirstNode();
+    hasNext_ = true;
+    RETURN_RC_IF_NOT_SUCCESS(findFirstNode());
     return RC::SUCCESSS;
 }
 
@@ -30,8 +31,10 @@ RC IX_IndexScan::CloseScan()
     if (!isOpen_)
         return RC::IX_INDEX_SCAN_CLOSED;
 
-    indexHandle_->unpinNode(curNode_);
+    if (curNode_.getPageNum() != NULL_PAGE_NUM)
+        RETURN_RC_IF_NOT_SUCCESS(indexHandle_->unpinNode(curNode_));
     isOpen_ = false;
+    hasNext_ = false;
     return RC::SUCCESSS;
 }
 
@@ -39,16 +42,49 @@ RC IX_IndexScan::GetNextEntry(RID& rid)
 {
     if (!isOpen_)
         return RC::IX_INDEX_SCAN_CLOSED;
+    if (!hasNext_)
+        return RC::IX_INDEX_SCAN_EOF;
 
+    EXTRACT_SLOT_NUM(slot, cur_);
+    rid = curNode_.getRid(slot);
+
+    // move to next valid entry
     switch (compOp_) {
-    case CompOp::EQ:
-        EXTRACT_SLOT_NUM(slot, cur_);
-        rid = curNode_.getRid(slot);
-        if (moveToNext()) {
+    case CompOp::EQ: {
+        if (moveToNextEntry()) {
             EXTRACT_SLOT_NUM(nextSlot, cur_);
-            isOpen_ = (cmp_(value_, curNode_.getAttr(nextSlot)) == 0);
+            hasNext_ = (cmp_(value_, curNode_.getAttr(nextSlot)) == 0);
         }
         break;
+    }
+    case CompOp::NE: {
+        while (moveToNextEntry()) {
+            EXTRACT_SLOT_NUM(nextSlot, cur_);
+            if (cmp_(value_, curNode_.getAttr(nextSlot)) != 0)
+                break;
+        }
+        break;
+    }
+    case CompOp::NO:
+    case CompOp::GE:
+    case CompOp::GT: {
+        moveToNextEntry();
+        break;
+    }
+    case CompOp::LE: {
+        if (moveToNextEntry()) {
+            EXTRACT_SLOT_NUM(nextSlot, cur_);
+            hasNext_ = (cmp_(value_, curNode_.getAttr(nextSlot)) <= 0);
+        }
+        break;
+    }
+    case CompOp::LT: {
+        if (moveToNextEntry()) {
+            EXTRACT_SLOT_NUM(nextSlot, cur_);
+            hasNext_ = (cmp_(value_, curNode_.getAttr(nextSlot)) < 0);
+        }
+        break;
+    }
     default:
         assert(true);
     }
@@ -59,17 +95,30 @@ RC IX_IndexScan::findFirstNode()
 {
     switch (compOp_) {
     case CompOp::EQ:
+    case CompOp::GE:
         RETURN_RC_IF_NOT_SUCCESS(indexHandle_->GetLeafEntryAddrEqualTo(value_, cur_));
-        EXTRACT_SLOT_NUM(slot, cur_);
-        if (slot == -1)
-            CloseScan();
+        break;
+    case CompOp::GT:
+        RETURN_RC_IF_NOT_SUCCESS(indexHandle_->GetLeafEntryAddrGreatThen(value_, cur_));
+        break;
+    case CompOp::NE:
+    case CompOp::NO:
+    case CompOp::LE:
+    case CompOp::LT:
+        RETURN_RC_IF_NOT_SUCCESS(indexHandle_->GetFirstLeafEntryAddr(cur_));
+        break;
     default:
         assert(true);
     }
+    EXTRACT_SLOT_NUM(slot, cur_);
+    if (slot == -1)
+        hasNext_ = false;
+    else
+        curNode_ = indexHandle_->readBNodeFrom(cur_);
     return RC::SUCCESSS;
 }
 
-bool IX_IndexScan::moveToNext()
+bool IX_IndexScan::moveToNextEntry()
 {
     EXTRACT_PAGE_SLOT_NUM(pageNum, slotNum, cur_);
 

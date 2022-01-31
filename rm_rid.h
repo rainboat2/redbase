@@ -26,7 +26,9 @@ private:
     SlotNum slotNum_;
 };
 
-const RID NULL_RID { -1, -1 };
+#define NULL_SLOT_NUM -1
+
+const RID NULL_RID { NULL_PAGE_NUM, NULL_SLOT_NUM };
 
 #define EXTRACT_SLOT_NUM(var, rid_object) \
     SlotNum var;                          \

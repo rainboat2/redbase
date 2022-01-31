@@ -27,7 +27,7 @@ struct IX_BInsertUpEntry {
 // all element in rid_(i+1) that not appear in before node equal or greater then attr_i
 class IX_BNodeWapper {
 public:
-    IX_BNodeWapper() = default;
+    IX_BNodeWapper();
     IX_BNodeWapper(int attrLength, AttrType attrType_, char* nodeData, RID addr);
     ~IX_BNodeWapper() = default;
 

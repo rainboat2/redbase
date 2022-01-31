@@ -53,6 +53,7 @@ enum class RC {
     IX_INDEX_CLOSED,
     IX_INDEX_SCAN_OPENED,
     IX_INDEX_SCAN_CLOSED,
+    IX_INDEX_SCAN_EOF,
 };
 
 void PrintError(RC rc);

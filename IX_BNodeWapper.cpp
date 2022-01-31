@@ -1,5 +1,10 @@
 #include "IX_Internal.h"
 
+IX_BNodeWapper::IX_BNodeWapper()
+    : addr_(NULL_RID)
+{
+}
+
 IX_BNodeWapper::IX_BNodeWapper(int attrLength, AttrType attrType, char* nodeData, RID addr)
     : attrLength_(attrLength)
     , attrType_(attrType)
@@ -154,8 +159,8 @@ void IX_BNodeWapper::spiltInto(IX_BNodeWapper& second, IX_BInsertUpEntry& up, bo
 
     if (isLeaf) {
         // set next sibling
-        second.rids_[order_] = { getPageNum(), -1 };
-        rids_[order_] = { second.getPageNum(), -1 };
+        second.rids_[order_] = { getPageNum(), NULL_SLOT_NUM };
+        rids_[order_] = { second.getPageNum(), NULL_SLOT_NUM };
     }
 }
 

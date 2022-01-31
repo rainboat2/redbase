@@ -18,6 +18,53 @@ RC IX_IndexHandle::InsertEntry(void* pData, const RID& rid)
     return RC::SUCCESSS;
 }
 
+RC IX_IndexHandle::GetLeafEntryAddrEqualTo(void* pData, RID& rid) const
+{
+    RC rc = getLeafBy(pData, rid, [](void* pData, IX_BNodeWapper& cur) {
+        return cur.getRid(cur.upperBound(pData));
+    });
+    RETURN_RC_IF_NOT_SUCCESS(rc);
+
+    // getLeafBy only find leaf node, we need to find slotNum that pData first appear
+    auto leaf = readBNodeFrom(rid);
+    SlotNum slot = leaf.indexOf(pData);
+    rid = { leaf.getPageNum(), slot };
+    return RC::SUCCESSS;
+}
+
+RC IX_IndexHandle::GetLeafAddrGreatThen(void* pData, RID& rid) const
+{
+    return getLeafBy(pData, rid, [](void* pData, IX_BNodeWapper& cur) {
+        return cur.getRid(cur.upperBound(pData));
+    });
+}
+
+RC IX_IndexHandle::GetFirstLeafAddr(RID& rid) const
+{
+    char dummy[8];
+    return getLeafBy(dummy, rid, [](void* pData, IX_BNodeWapper& cur) {
+        return cur.getRid(0);
+    });
+}
+
+RC IX_IndexHandle::getLeafBy(void* pData, RID& rid, std::function<RID(void*, IX_BNodeWapper&)> getNext) const
+{
+    IX_BNodeWapper cur = root_;
+    RID nextAddr;
+    for (int i = 0; i < fileHeader_.height; i++) {
+        nextAddr = getNext(pData, cur);
+        // if not root_, unpin page
+        if (i != 0)
+            RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.UnpinPage(cur.getPageNum()));
+
+        if (i != fileHeader_.height - 1)
+            cur = readBNodeFrom(nextAddr);
+        else
+            rid = nextAddr;
+    }
+    return RC::SUCCESSS;
+}
+
 RC IX_IndexHandle::ForcePages()
 {
     RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.ForcePages());
@@ -54,7 +101,7 @@ IX_BInsertUpEntry IX_IndexHandle::InsertEntry(IX_BNodeWapper& cur, void* pData, 
         }
     } else {
         // not leaf node
-        int index = cur.indexOf(pData);
+        int index = cur.upperBound(pData);
         IX_BNodeWapper next = readBNodeFrom(cur.getRid(index));
         auto upEntry = InsertEntry(next, pData, rid, level + 1);
         if (upEntry.isSpilt) {
@@ -73,7 +120,7 @@ IX_BInsertUpEntry IX_IndexHandle::InsertEntry(IX_BNodeWapper& cur, void* pData, 
     return curEntry;
 }
 
-IX_BNodeWapper IX_IndexHandle::readBNodeFrom(const RID& rid)
+IX_BNodeWapper IX_IndexHandle::readBNodeFrom(const RID& rid) const
 {
     PageNum pageNum;
     rid.GetPageNum(pageNum);
@@ -89,7 +136,7 @@ IX_BNodeWapper IX_IndexHandle::createBNode()
     PF_PageHandle page;
     RC rc = pf_fileHandle_.AllocatePage(page);
     assert(rc == RC::SUCCESSS);
-    IX_BNodeWapper::initNode(page);
+    IX_BNodeWapper::initNode(page, fileHeader_.attrType, fileHeader_.attrLength);
     PageNum pageNum;
     char* data;
     page.GetData(data);

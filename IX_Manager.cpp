@@ -26,7 +26,7 @@ RC IX_Manager::CreateIndex(
 
     // set index head and root page
     setIndexHeader(p0, attrType, attrLength);
-    IX_BNodeWapper::initNode(p1);
+    IX_BNodeWapper::initNode(p1, attrType, attrLength);
 
     PageNum pageNum;
     p0.GetPageNum(pageNum);

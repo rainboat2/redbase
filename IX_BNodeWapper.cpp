@@ -13,12 +13,21 @@ IX_BNodeWapper::IX_BNodeWapper(int attrLength, AttrType attrType, char* nodeData
     cmp_ = getComparator(attrType_, attrLength_);
 }
 
-int IX_BNodeWapper::indexOf(const void* pData) const
+int IX_BNodeWapper::upperBound(const void* pData) const
+{
+    int rs = lowerBound(pData);
+    // find the first element greater than pdata
+    while (rs < size() && cmp_(getAttr(rs), pData) <= 0)
+        rs++;
+    return rs;
+}
+
+int IX_BNodeWapper::lowerBound(const void* pData) const
 {
     int rs = 0;
     while (true) {
         int step = 1, tmp = rs;
-        while (rs + step < size() && cmp_(pData, getAttr(rs + step)) >= 0) {
+        while (rs + step < size() && cmp_(getAttr(rs + step), pData) < 0) {
             tmp = rs + step;
             step = step << 1;
         }
@@ -27,9 +36,16 @@ int IX_BNodeWapper::indexOf(const void* pData) const
         else
             rs = tmp;
     }
-    // if not equal, find the first element greater than pdata
-    if (rs < size() && cmp_(pData, getAttr(rs)) > 0)
+    return rs;
+}
+
+int IX_BNodeWapper::indexOf(const void* pData) const
+{
+    int rs = lowerBound(pData);
+    if (rs + 1 < size() && cmp_(getAttr(rs + 1), pData) == 0)
         rs++;
+    else
+        rs = -1;
     return rs;
 }
 
@@ -39,7 +55,7 @@ int IX_BNodeWapper::leafInsert(void* attr, RID left)
     if (isFull())
         return -1;
 
-    int i = indexOf(attr);
+    int i = upperBound(attr);
     insertInto(i, left);
     insertInto(i, (char*)attr);
     *size_ += 1;
@@ -52,7 +68,7 @@ int IX_BNodeWapper::notLeafInsert(const IX_BInsertUpEntry& up)
     if (isFull())
         return -1;
 
-    int i = indexOf(up.attr);
+    int i = upperBound(up.attr);
     insertInto(i + 1, up.right);
     insertInto(i, (char*)up.attr);
     *size_ += 1;
@@ -62,7 +78,7 @@ int IX_BNodeWapper::notLeafInsert(const IX_BInsertUpEntry& up)
 IX_BInsertUpEntry IX_BNodeWapper::leafSpiltAndInsert(void* attr, RID rid, IX_BNodeWapper& newNode)
 {
     assert(isFull());
-    int i = indexOf(attr);
+    int i = upperBound(attr);
 
     char last_attr[MAX_STRING_LEN];
     RID last_rid;
@@ -81,13 +97,14 @@ IX_BInsertUpEntry IX_BNodeWapper::leafSpiltAndInsert(void* attr, RID rid, IX_BNo
     return cur;
 }
 
-IX_BInsertUpEntry IX_BNodeWapper::notLeafSpiltAndInsert(const IX_BInsertUpEntry &up, IX_BNodeWapper &newNode){
+IX_BInsertUpEntry IX_BNodeWapper::notLeafSpiltAndInsert(const IX_BInsertUpEntry& up, IX_BNodeWapper& newNode)
+{
     assert(isFull());
     IX_BInsertUpEntry last;
-    int i = indexOf(up.attr);
-    if (i == order_){
+    int i = upperBound(up.attr);
+    if (i == order_) {
         last = up;
-    }else{
+    } else {
         memcpy(last.attr, getAttr(*size_ - 1), attrLength_);
         last.right = getRid(*size_ - 1);
         *size_ -= 1;
@@ -97,13 +114,6 @@ IX_BInsertUpEntry IX_BNodeWapper::notLeafSpiltAndInsert(const IX_BInsertUpEntry 
     spiltInto(newNode, cur, false);
     newNode.notLeafInsert(last);
     return cur;
-}
-
-void IX_BNodeWapper::initNode(PF_PageHandle& page)
-{
-    char* data;
-    page.GetData(data);
-    *((int*)data) = 0;
 }
 
 /*
@@ -163,4 +173,13 @@ void IX_BNodeWapper::insertInto(int i, char* pData)
         setAttr(j, getAttr(j - 1));
     }
     setAttr(i, pData);
+}
+
+void IX_BNodeWapper::initNode(PF_PageHandle& page, AttrType attrType_, int attrLength_)
+{
+    char* data;
+    page.GetData(data);
+    IX_BNodeWapper node(attrLength_, attrType_, data, NULL_RID);
+    *node.size_ = 0;
+    node.setRid(node.order_, NULL_RID);
 }

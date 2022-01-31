@@ -27,7 +27,7 @@ public:
     std::string getFileName(const char* filename, int indexNo);
 
 private:
-    void setIndexHeader(PF_PageHandle& hdaderPage, AttrType attrtype, int attrLength);
+    void setIndexHeader(PF_PageHandle& headerPage, AttrType attrtype, int attrLength);
 
 private:
     PF_Manager& pf_manager_;
@@ -45,14 +45,27 @@ public:
 
     RC InsertEntry(void* pData, const RID& rid);
     RC DeleteEntry(void* pData, const RID& rid);
+
+    // find entry in leaf node that pData first appear, -1 will be set to slotNum if no entry can be found
+    RC GetLeafEntryAddrEqualTo(void* pData, RID& rid) const;
+
+    // find leaf node that element greater than pData first appear
+    RC GetLeafAddrGreatThen(void* pData, RID& rid) const;
+    // find first leaf node
+    RC GetFirstLeafAddr(RID& rid) const;
     RC ForcePages();
 
 private:
     IX_BInsertUpEntry InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
     void changeRoot(IX_BInsertUpEntry& entry);
-    IX_BNodeWapper readBNodeFrom(const RID& rid);
+
+    RC getLeafBy(void* pData, RID& rid, std::function<RID(void*, IX_BNodeWapper&)> getNext) const;
+
+    IX_BNodeWapper readBNodeFrom(const RID& rid) const;
     IX_BNodeWapper createBNode();
+
     RC forceHeader();
+    inline RC unpinNode(IX_BNodeWapper& node) { return pf_fileHandle_.UnpinPage(node.getPageNum()); }
 
 private:
     IX_BNodeWapper root_;
@@ -74,11 +87,18 @@ public:
     RC CloseScan();
 
 private:
+    RC findFirstNode();
+    bool moveToNext();
+
+private:
     bool isOpen_;
-    IX_IndexHandle *indexHandle_;
-    std::function<int(const void* d1, const void* d2)> cmp_;
+    IX_IndexHandle* indexHandle_;
+    std::function<int(const void*, const void*)> cmp_;
+    CompOp compOp_;
     void* value_;
     ClientHint pinHint_;
+    IX_BNodeWapper curNode_;
+    RID cur_;
 };
 
 #endif

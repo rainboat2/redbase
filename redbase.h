@@ -48,14 +48,16 @@ enum class RC {
     RM_FILE_SCAN_OPENED,
     RM_FILE_SCAN_CLOSED,
     RM_FILE_EOF,
-    
+
     IX_INDEX_OPENED = 2000,
     IX_INDEX_CLOSED,
+    IX_INDEX_SCAN_OPENED,
+    IX_INDEX_SCAN_CLOSED,
 };
 
 void PrintError(RC rc);
 
-enum class AttrType: int {
+enum class AttrType : int {
     RD_INT,
     RD_FLOAT,
     RD_STRING
@@ -79,9 +81,9 @@ enum class ClientHint {
 
 #define RETURN_RC_IF_NOT_SUCCESS(redbase_call_or_rc) \
     {                                                \
-        RC rc = redbase_call_or_rc;                  \
-        if (rc != RC::SUCCESSS)                      \
-            return rc;                               \
+        RC rc__ = redbase_call_or_rc;                \
+        if (rc__ != RC::SUCCESSS)                    \
+            return rc__;                             \
     }
 
 #endif

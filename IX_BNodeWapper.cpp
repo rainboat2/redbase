@@ -34,7 +34,7 @@ int IX_BNodeWapper::upperBound(const void* pData) const
             rs = tmp;
     }
     if (rs < size() && cmp_(getAttr(rs), pData) <= 0)
-        rs ++;
+        rs++;
     return rs;
 }
 
@@ -132,6 +132,18 @@ IX_BInsertUpEntry IX_BNodeWapper::notLeafSpiltAndInsert(const IX_BInsertUpEntry&
     return cur;
 }
 
+bool IX_BNodeWapper::leafRemove(void* attr, const RID& rid)
+{
+    SlotNum slotNum = indexOf(attr);
+    assert(slotNum != -1);
+    assert(getRid(slotNum) == rid);
+
+    removeRid(slotNum);
+    removeData(slotNum);
+    *size_ = *size_ - 1;
+    return true;
+}
+
 /*
 * suitation 1:
 * order_ = 2 * n + 1, (assume n = 1)
@@ -189,6 +201,20 @@ void IX_BNodeWapper::insertInto(int i, char* pData)
         setAttr(j, getAttr(j - 1));
     }
     setAttr(i, pData);
+}
+
+void IX_BNodeWapper::removeRid(int i)
+{
+    for (int j = i; j < *size_ - 1; j++) {
+        setRid(j, getRid(j + 1));
+    }
+}
+
+void IX_BNodeWapper::removeData(int i)
+{
+    for (int j = i; j < *size_ - 1; j++) {
+        setAttr(j, getAttr(j + 1));
+    }
 }
 
 void IX_BNodeWapper::initNode(PF_PageHandle& page, AttrType attrType_, int attrLength_)

@@ -22,6 +22,10 @@ struct IX_BInsertUpEntry {
     RID right { -1, -1 };
 };
 
+struct IX_BDeleteUpEntry{
+    bool needMerge;
+};
+
 // node: [size, attr0, ...,  attrN, rid0, ..., ridN+1]
 // all element in rid_i less than attr_i
 // all element in rid_(i+1) that not appear in before node equal or greater then attr_i
@@ -36,7 +40,7 @@ public:
 
     inline void setRid(int i, RID rid) { rids_[i] = rid; }
     inline RID getRid(int i) const { return rids_[i]; }
-    inline RID lastRid() const {return rids_[order_];}
+    inline RID lastRid() const { return rids_[order_]; }
     inline void setAttr(int i, void* data) { memcpy(getAttr(i), data, attrLength_); }
     inline void* getAttr(int i) const { return attrs_ + attrLength_ * i; }
 
@@ -65,6 +69,9 @@ public:
     int notLeafInsert(const IX_BInsertUpEntry& up);
     IX_BInsertUpEntry notLeafSpiltAndInsert(const IX_BInsertUpEntry& up, IX_BNodeWapper& newNode);
 
+    // remove attr and return it's RID in leaf, return NULL_RID if not found
+    bool leafRemove(void* attr, const RID& rid);
+
 public:
     static void initNode(PF_PageHandle& page, AttrType attrType_, int attrLength_);
     static constexpr inline int countOrder(int attrLength)
@@ -78,6 +85,8 @@ private:
     // insert data to index i
     void insertInto(int i, RID rid);
     void insertInto(int i, char* pData);
+    void removeRid(int i);
+    void removeData(int i);
 
 private:
     // status of bNode

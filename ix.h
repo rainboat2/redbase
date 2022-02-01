@@ -57,6 +57,7 @@ public:
 
 private:
     IX_BInsertUpEntry InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
+    IX_BDeleteUpEntry DeleteEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
     void changeRoot(IX_BInsertUpEntry& entry);
 
     RC getLeafBy(void* pData, RID& rid, std::function<RID(void*, IX_BNodeWapper&)> getNext) const;

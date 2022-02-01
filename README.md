@@ -2,21 +2,21 @@
 
 ## Introduction
 
-it's a project of stanford class [CS346](https://web.stanford.edu/class/cs346/2015/).
+It's a project of stanford class [CS346](https://web.stanford.edu/class/cs346/2015/).
 
 ## Dependencies
 
-this project depend on googletest. you can install it by running the follow command.
+This project depend on googletest. you can install it by running the follow command.
 
 ### macOS
- 
+
 ```shell
 brew install googletest
 ```
 
 ## Build project
 
-in workspace folder, run the following command to generate executable file `bin/redbase`.
+In workspace folder, run the following command to generate executable file `bin/redbase` and `bin/redbaseTest`.
 
 ```shell
 mkdir build bin lib
@@ -25,7 +25,14 @@ make
 
 ## Test
 
-run the following command to run testcase of this project.
+This command will run all test cases of this project.
 ```shell
 make run_test
+```
+
+List all test cases and run the specified test cases only by the following commands.
+
+```shell
+make run_test cmd_args="--gtest_list_tests"
+make run_test cmd_args="--gtest_filter=*testCaseName"
 ```

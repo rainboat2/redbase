@@ -20,16 +20,27 @@ IX_BNodeWapper::IX_BNodeWapper(int attrLength, AttrType attrType, char* nodeData
 
 int IX_BNodeWapper::upperBound(const void* pData) const
 {
-    int rs = lowerBound(pData);
-    // find the first element greater than pdata
-    while (rs < size() && cmp_(getAttr(rs), pData) <= 0)
-        rs++;
+    int rs = 0;
+    while (true) {
+        int step = 1, tmp = rs;
+        while (rs + step < size() && cmp_(getAttr(rs + step), pData) <= 0) {
+            tmp = rs + step;
+            step = step << 1;
+        }
+        if (tmp == rs)
+            break;
+
+        else
+            rs = tmp;
+    }
+    if (rs < size() && cmp_(getAttr(rs), pData) <= 0)
+        rs ++;
     return rs;
 }
 
 int IX_BNodeWapper::lowerBound(const void* pData) const
 {
-    int rs = 0;
+    int rs = -1;
     while (true) {
         int step = 1, tmp = rs;
         while (rs + step < size() && cmp_(getAttr(rs + step), pData) < 0) {

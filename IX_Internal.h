@@ -48,10 +48,10 @@ public:
         return num;
     }
 
-    // return the first index that it's element greater then pData
+    // return the first index that it's element greater then pData, return order_ if all element less than pData.
     int upperBound(const void* pData) const;
 
-    // return the last index that it's element less then pData
+    // return the last index that it's element less then pData, return -1 if all element greater than pData.
     int lowerBound(const void* pdata) const;
 
     // return the first index that it's element equal to pData, return -1 if not found

@@ -30,16 +30,13 @@ RM_LIB        = $(LIB_DIR)/librm.a
 IX_LIB        = $(LIB_DIR)/libix.a
 READBASE_LIBS = $(PF_LIB) $(RM_LIB) $(IX_LIB)
 
-# targets
-TESTERS = $(TEST_SOURCES:.cpp=)
-
-all: redbase $(TESTERS)
+all: redbase redbaseTest
 
 redbase: $(OBJECTS) $(READBASE_LIBS)
 	$(CC) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $(BUILD_DIR)/main.o -o $(TARGET_DIR)/$@
 
-$(TESTERS): % : $(BUILD_DIR)/%.o ${READBASE_LIBS}
-	$(CC) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $(TARGET_DIR)/$@
+redbaseTest: $(OBJECTS) ${READBASE_LIBS}
+	$(CC) $(CPPFLAGS) $(TEST_OBJECTS) $(LDFLAGS) $(LIBS) -o $(TARGET_DIR)/$@
 
 # generate library file
 $(PF_LIB): $(PF_OBJECTS)
@@ -71,7 +68,5 @@ clean:
 	rm bin/* $(BUILD_DIR)/*.d*  $(BUILD_DIR)/*.o lib/*.a
 print:
 	echo $(OBJECTS)
-run_test: $(TESTERS)
-	bin/PF_Test
-	bin/RM_Test
-	bin/IX_Test
+run_test: redbaseTest
+	bin/redbaseTest $(cmd_args)

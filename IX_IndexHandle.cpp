@@ -21,7 +21,7 @@ RC IX_IndexHandle::InsertEntry(void* pData, const RID& rid)
 RC IX_IndexHandle::GetLeafEntryAddrEqualTo(void* pData, RID& rid) const
 {
     RC rc = getLeafBy(pData, rid, [](void* pData, IX_BNodeWapper& cur) {
-        return cur.getRid(cur.upperBound(pData));
+        return cur.getRid(cur.lowerBound(pData) + 1);
     });
     RETURN_RC_IF_NOT_SUCCESS(rc);
 

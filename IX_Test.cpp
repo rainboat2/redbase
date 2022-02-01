@@ -25,9 +25,19 @@ TEST_F(IX_BNodeWapperTest, INDEX_OF_TEST)
     IX_BNodeWapper node(sizeof(int), AttrType::RD_INT, buffer, { -1, -1 });
     EXPECT_EQ(node.size(), arr.size());
 
-    const std::map<int, int> indexOf = { { -1, 0 }, { 0, 0 }, { 1, 1 }, { 2, 3 }, { 3, 3 }, { 4, 4 }, { 5, 4 }, { 8, 5 }, { 12, 5 } };
-    for (auto pair : indexOf) {
+    const std::map<int, int> upperBound = { { -1, 0 }, { 0, 0 }, { 1, 1 }, { 2, 3 }, { 3, 3 }, { 4, 4 }, { 5, 4 }, { 8, 5 }, { 12, 5 } };
+    for (auto pair : upperBound) {
         EXPECT_EQ(node.upperBound(&pair.first), pair.second);
+    }
+
+    const std::map<int, int> lowerBound = { { -1, -1 }, { 0, -1 }, { 1, -1 }, { 2, 0 }, { 3, 2 }, { 4, 2 }, { 8, 3 }, { 12, 4 } };
+    for (auto pair : lowerBound) {
+        EXPECT_EQ(node.lowerBound(&pair.first), pair.second);
+    }
+
+    const std::map<int, int> indexOf = { { -1, -1 }, { 0, -1 }, { 1, 0 }, { 2, 1 }, { 3, -1 }, { 4, 3 }, { 8, 4 }, { 12, -1 } };
+    for (auto pair : indexOf) {
+        EXPECT_EQ(node.indexOf(&pair.first), pair.second);
     }
 }
 

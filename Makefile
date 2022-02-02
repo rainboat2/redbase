@@ -1,7 +1,7 @@
 CC       = g++
+CPPFLAGS = -std=c++14 -g -Wall
 LDFLAGS  = -L $(LIB_DIR)
 LIBS     = -lpf -lrm  -lix -lsm -lgtest -lgtest_main -pthread
-CPPFLAGS = -std=c++14 -g -Wall
 AR       = ar -rc
 RANLIB   = ranlib
 
@@ -36,6 +36,7 @@ IX_LIB        = $(LIB_DIR)/libix.a
 SM_LIB        = $(LIB_DIR)/libsm.a
 READBASE_LIBS = $(PF_LIB) $(RM_LIB) $(IX_LIB) $(SM_LIB)
 
+# generate excutable file
 all: $(UTILITES:.cpp=) redbaseTest
 
 $(UTILITES:.cpp=): % : %.cpp $(READBASE_LIBS)
@@ -73,6 +74,7 @@ $(BUILD_DIR)/%.d: %.cpp
 $(OBJECTS): %.o:
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
+# phony target
 .PHONY: clean print run_test
 clean:
 	rm -rf bin/* $(BUILD_DIR)/*.d*  $(BUILD_DIR)/*.o lib/*.a

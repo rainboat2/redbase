@@ -2,6 +2,7 @@
 #include "pf.h"
 #include "redbase.h"
 #include "rm.h"
+#include "sm.h"
 
 #include <iostream>
 #include <string.h>
@@ -23,12 +24,37 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    if (chdir(dbname)){
+    if (chdir(dbname)) {
         std::cerr << strerror(errno) << std::endl;
         exit(1);
     }
 
-    // Create the system catalogs
-    std::cout << "create system catalogs" << std::endl;
+    PF_Manager pf_manager;
+    RM_Manager rm_manager(pf_manager);
+    IX_Manager ix_manager(pf_manager);
+
+    RM_FileHandle rel, attr;
+    EXIT_IF_NOT_SUCESSS(rm_manager.CreateFile(RELATION_TABLE_NAME, sizeof(Relcat)));
+    EXIT_IF_NOT_SUCESSS(rm_manager.CreateFile(ATTRIBUTE_TABLE_NAME, sizeof(Attrcat)));
+
+    SM_Manager sm_manager(ix_manager, rm_manager);
+    AttrInfo relcatAttrs[] = {
+        AttrInfo { "relName", AttrType::RD_STRING, MAXNAME + 1 },
+        AttrInfo { "tupleLength", AttrType::RD_INT, sizeof(int) },
+        AttrInfo { "attrCount", AttrType::RD_INT, sizeof(int) },
+        AttrInfo { "indexCount", AttrType::RD_INT, sizeof(int) },
+    };
+    EXIT_IF_NOT_SUCESSS(sm_manager.CreateTable(RELATION_TABLE_NAME, sizeof(relcatAttrs) / sizeof(AttrInfo), relcatAttrs));
+
+    AttrInfo attrcatAttrs[] = {
+        AttrInfo { "relName", AttrType::RD_STRING, MAXNAME + 1 },
+        AttrInfo { "attrName", AttrType::RD_STRING, MAXNAME + 1 },
+        AttrInfo { "offset", AttrType::RD_INT, sizeof(int) },
+        AttrInfo { "attrType", AttrType::RD_INT, sizeof(int) },
+        AttrInfo { "attrLength", AttrType::RD_INT, sizeof(int) },
+        AttrInfo { "indexNo", AttrType::RD_INT, sizeof(int) }
+    };
+    EXIT_IF_NOT_SUCESSS(sm_manager.CreateTable(ATTRIBUTE_TABLE_NAME, sizeof(attrcatAttrs) / sizeof(AttrInfo), attrcatAttrs));
+
     return 0;
 }

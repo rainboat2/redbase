@@ -16,10 +16,9 @@ brew install googletest
 
 ## Build project
 
-In workspace folder, run the following command to generate executable file `bin/redbase` and `bin/redbaseTest`.
+In workspace folder, run the following command to generate executable file in `build/bin`.
 
 ```shell
-mkdir build bin lib
 make
 ```
 

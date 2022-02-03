@@ -87,4 +87,13 @@ enum class ClientHint {
             return rc__;                             \
     }
 
+#define EXIT_IF_NOT_SUCESSS(redbase_call_or_rc) \
+    {                                           \
+        RC rc__ = redbase_call_or_rc;           \
+        if (rc__ != RC::SUCCESSS) {             \
+            PrintError(rc__);                   \
+            exit(-1);                           \
+        }                                       \
+    }
+
 #endif

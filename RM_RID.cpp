@@ -13,11 +13,6 @@ RID::RID(PageNum pageNum, SlotNum slotNum)
 {
 }
 
-bool RID::operator==(const RID &rid) const
-{
-    return pageNum_ == rid.pageNum_ && slotNum_ == rid.slotNum_;
-}
-
 RC RID::GetPageNum(PageNum& pageNum) const
 {
     pageNum = pageNum_;

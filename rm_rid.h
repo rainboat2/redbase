@@ -11,11 +11,19 @@ public:
 public:
     RID();
 
+    RID(PageNum pageNum, SlotNum slotNum);
+
     ~RID() = default;
 
-    bool operator==(const RID& rid) const;
+    inline bool operator==(const RID& rid) const
+    {
+        return pageNum_ == rid.pageNum_ && slotNum_ == rid.slotNum_;
+    }
 
-    RID(PageNum pageNum, SlotNum slotNum);
+    inline bool operator!=(const RID& rid) const
+    {
+        return pageNum_ != rid.pageNum_ || slotNum_ != rid.slotNum_;
+    }
 
     RC GetPageNum(PageNum& pageNum) const;
 

@@ -33,7 +33,7 @@ RC IX_IndexScan::CloseScan()
         return RC::IX_INDEX_SCAN_CLOSED;
 
     if (curNode_.getPageNum() != NULL_PAGE_NUM)
-        RETURN_RC_IF_NOT_SUCCESS(indexHandle_->unpinNode(curNode_));
+        RETURN_RC_IF_NOT_SUCCESS(indexHandle_->unpin(curNode_));
     isOpen_ = false;
     hasNext_ = false;
     return RC::SUCCESSS;
@@ -129,7 +129,7 @@ bool IX_IndexScan::moveToNextEntry()
             isMove = hasNext_ = false;
         } else {
             RID next = curNode_.lastRid();
-            indexHandle_->unpinNode(curNode_);
+            indexHandle_->unpin(curNode_);
             curNode_ = indexHandle_->readBNodeFrom(next);
             EXTRACT_PAGE_NUM(nextPageNum, next);
             cur_ = RID(nextPageNum, 0);

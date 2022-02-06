@@ -14,6 +14,7 @@ struct IX_BFileHeader {
     int height;
     int order;
     RID root;
+    int bucketItemNum;
 };
 
 struct IX_BInsertUpEntry {
@@ -22,13 +23,13 @@ struct IX_BInsertUpEntry {
     RID right { -1, -1 };
 };
 
-struct IX_BDeleteUpEntry{
+struct IX_BDeleteUpEntry {
     bool needMerge;
 };
 
 // node: [size, attr0, ...,  attrN, rid0, ..., ridN+1]
 // all element in rid_i less than attr_i
-// all element in rid_(i+1) that not appear in before node equal or greater then attr_i
+// all element in rid_(i+1) that equal or greater then attr_i
 class IX_BNodeWapper {
 public:
     IX_BNodeWapper();
@@ -103,6 +104,58 @@ private:
     int* size_;
     RID* rids_;
     char* attrs_;
+};
+
+class IX_BBucketListWapper;
+
+// bucket: size, [data_rid, ..., data_rid, next_bucket_rid]
+class IX_BBucketWapper {
+    friend class IX_BBucketListWapper;
+
+public:
+    IX_BBucketWapper(int itemNum, char* data);
+    ~IX_BBucketWapper() = default;
+
+    inline RID get(int i) const { return rids_[i]; };
+
+    inline RID next() const { return rids_[itemNum_ - 1]; };
+    inline int size() const { return *size_; }
+    inline bool isFull() const { return *size_ == itemNum_ - 1; }
+
+    inline static int memorySize(int itemNum) { return itemNum * sizeof(RID) + sizeof(int); }
+
+private:
+    int itemNum_;
+    int* size_;
+    RID* rids_;
+};
+
+// bucketList: size, bitmap, [bucket, bucket, ....]
+class IX_BBucketListWapper {
+public:
+    IX_BBucketListWapper(int bucketItemNum, char* data, PageNum pageNum);
+    ~IX_BBucketListWapper() = default;
+
+    inline IX_BBucketWapper get(int i) const
+    {
+        return IX_BBucketWapper(bucketItemNum_, bucketList_ + IX_BBucketWapper::memorySize(bucketItemNum_) * i);
+    }
+    inline int size() const { return *size_; }
+    inline bool isFull() const { return *size_ == bucketListSize_; }
+    inline PageNum getPageNum() const { return pageNum_; }
+
+    RID allocateBucket();
+
+    static void initBucketList(PF_PageHandle& page, int bucketItemNum);
+
+private:
+    int bucketItemNum_;
+    int bucketListSize_;
+    PageNum pageNum_;
+
+    int* size_;
+    char* bitmap_;
+    char* bucketList_;
 };
 
 #endif

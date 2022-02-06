@@ -1,7 +1,7 @@
 #ifndef RM_INTERNAL_HH
 #define RM_INTERNAL_HH
 
-#include <string.h>
+#include "BitMapWapper.h"
 
 using SlotNum = int;
 
@@ -13,9 +13,6 @@ struct RM_FileHeader {
     int recordNumsOfEachPage;
 };
 
-#define BITMAP_SIZE(recordNums) \
-    (recordNums / 8 + ((recordNums % 8 == 0) ? 0 : 1))
-
 // page  structure
 // (RM_PageHeader, bitmap, slot ... slot, free space)
 // nextFree could be PageStatus or positive number(stand for next free page)
@@ -25,29 +22,7 @@ struct RM_PageHeader {
     int nextFree;
     char bitmap;
 
-    static inline int size(int recordNums)
-    {
-        return sizeof(int) + BITMAP_SIZE(recordNums);
-    }
-};
-
-class BitMapWapper {
-public:
-    BitMapWapper(char* data, size_t bitsNum);
-    ~BitMapWapper() = default;
-
-    inline size_t size() const { return bitsNum_; };
-    void set(size_t i, bool b);
-    bool get(size_t i) const;
-    // true if all bits is set to 1, else return false
-    bool all() const;
-    int findFirstZero() const;
-
-private:
-    // record bits from left to right
-    unsigned char* bitmap_;
-    size_t bitsNum_;
-    size_t bitmap_size_;
+    static inline int size(int recordNums) { return sizeof(int) + BitMapWapper::memorySize(recordNums); }
 };
 
 #endif

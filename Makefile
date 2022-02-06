@@ -1,7 +1,7 @@
 CC       = g++
 CPPFLAGS = -std=c++14 -g -Wall
 LDFLAGS  = -L $(LIB_DIR)
-LIBS     = -lpf -lrm  -lix -lsm -lgtest -lgtest_main -pthread
+LIBS     = -ltool -lpf -lrm  -lix -lsm -lgtest -lgtest_main -pthread
 AR       = ar -rc
 RANLIB   = ranlib
 
@@ -15,14 +15,16 @@ DIRS        = $(BUILD_DIR) $(LIB_DIR) $(OBJECTS_DIR) $(TARGET_DIR)
 UTILITES = redbase.cpp dbcreate.cpp dbdestroy.cpp
 
 # sources
-PF_SOURCES   = PF_PageHandle.cpp PrintError.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp RedbaseComparator.cpp
-RM_SOURCES   = BitMapWapper.cpp RM_RID.cpp RM_Manager.cpp RM_Record.cpp RM_FileHandle.cpp RM_FileScan.cpp
-IX_SOURCES   = IX_Manager.cpp IX_IndexHandle.cpp IX_BNodeWapper.cpp IX_IndexScan.cpp
+TOOL_SOURCES = RedbaseComparator.cpp PrintError.cpp BitMapWapper.cpp
+PF_SOURCES   = PF_PageHandle.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp
+RM_SOURCES   = RM_RID.cpp RM_Manager.cpp RM_Record.cpp RM_FileHandle.cpp RM_FileScan.cpp
+IX_SOURCES   = IX_Manager.cpp IX_IndexHandle.cpp IX_BNodeWapper.cpp IX_IndexScan.cpp IX_BBucketListWapper.cpp IX_BBucketWapper.cpp
 SM_SOURCES   = SM_Manager.cpp
 TEST_SOURCES = PF_Test.cpp RM_Test.cpp IX_Test.cpp
-SOURCES      = $(PF_SOURCES) $(RM_SOURCES) $(TEST_SOURCES) $(IX_SOURCES) $(SM_SOURCES)
+SOURCES      = $(TOOL_SOURCES) $(PF_SOURCES) $(RM_SOURCES) $(TEST_SOURCES) $(IX_SOURCES) $(SM_SOURCES)
 
 # objects
+TOOL_OBJECTS = $(addprefix $(OBJECTS_DIR)/, $(TOOL_SOURCES:cpp=o))
 PF_OBJECTS   = $(addprefix $(OBJECTS_DIR)/, $(PF_SOURCES:cpp=o))
 RM_OBJECTS   = $(addprefix $(OBJECTS_DIR)/, $(RM_SOURCES:cpp=o))
 IX_OBJECTS   = $(addprefix $(OBJECTS_DIR)/, $(IX_SOURCES:cpp=o))
@@ -31,11 +33,12 @@ TEST_OBJECTS = $(addprefix ${OBJECTS_DIR}/, ${TEST_SOURCES:cpp=o})
 OBJECTS      = $(addprefix $(OBJECTS_DIR)/, $(SOURCES:.cpp=.o))
 
 #libs
+TOOL_LIB      = $(LIB_DIR)/libtool.a
 PF_LIB        = $(LIB_DIR)/libpf.a
 RM_LIB        = $(LIB_DIR)/librm.a
 IX_LIB        = $(LIB_DIR)/libix.a
 SM_LIB        = $(LIB_DIR)/libsm.a
-READBASE_LIBS = $(PF_LIB) $(RM_LIB) $(IX_LIB) $(SM_LIB)
+READBASE_LIBS = $(TOOL_LIB) $(PF_LIB) $(RM_LIB) $(IX_LIB) $(SM_LIB)
 
 # generate excutable file
 all: make_dirs $(UTILITES:.cpp=) redbaseTest
@@ -47,6 +50,10 @@ redbaseTest: $(OBJECTS) ${READBASE_LIBS}
 	$(CC) $(CPPFLAGS) $(TEST_OBJECTS) $(LDFLAGS) $(LIBS) -o $(TARGET_DIR)/$@
 
 # generate library file
+$(TOOL_LIB): $(TOOL_OBJECTS)
+	$(AR) $@ $(TOOL_OBJECTS)
+	$(RANLIB) $@
+
 $(PF_LIB): $(PF_OBJECTS)
 	$(AR) $@ $(PF_OBJECTS)
 	$(RANLIB) $@
@@ -84,6 +91,6 @@ clean:
 print:
 	echo $(OBJECTS)
 run_test: redbaseTest
-	bin/redbaseTest $(cmd_args)
+	$(TARGET_DIR)/redbaseTest $(cmd_args)
 make_dirs:
 	mkdir -p $(DIRS)

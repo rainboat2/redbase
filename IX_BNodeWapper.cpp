@@ -68,8 +68,7 @@ int IX_BNodeWapper::indexOf(const void* pData) const
 int IX_BNodeWapper::leafInsert(void* attr, RID left)
 {
     assert(*size_ <= order_ && *size_ >= 0);
-    if (isFull())
-        return -1;
+    assert(!isFull());
 
     int i = upperBound(attr);
     insertInto(i, left);

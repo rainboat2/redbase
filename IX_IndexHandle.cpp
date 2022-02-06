@@ -31,9 +31,9 @@ IX_BDeleteUpEntry IX_IndexHandle::DeleteEntry(IX_BNodeWapper& cur, void* pData, 
         IX_BNodeWapper next = readBNodeFrom(cur.getRid(index));
         auto up = DeleteEntry(next, pData, rid, level + 1);
         if (up.needMerge) {
-            // TODO: redistrube entry
+            // TODO: redistribute entry
         }
-        unpinNode(next);
+        unpin(next);
     }
     return curEntry;
 }
@@ -53,13 +53,17 @@ IX_BInsertUpEntry IX_IndexHandle::InsertEntry(IX_BNodeWapper& cur, void* pData, 
     IX_BInsertUpEntry curEntry;
     if (level == fileHeader_.height - 1) {
         // leaf node
-        if (cur.isFull()) {
-            IX_BNodeWapper newNode = createBNode();
-            curEntry = cur.leafSpiltAndInsert(pData, rid, newNode);
-            pf_fileHandle_.MarkDirty(newNode.getPageNum());
-            pf_fileHandle_.UnpinPage(newNode.getPageNum());
+        if (cur.indexOf(pData) != -1) {
+            insertIntoBucket(cur, pData, rid);
         } else {
-            cur.leafInsert(pData, rid);
+            if (cur.isFull()) {
+                IX_BNodeWapper newNode = createBNode();
+                curEntry = cur.leafSpiltAndInsert(pData, rid, newNode);
+                pf_fileHandle_.MarkDirty(newNode.getPageNum());
+                pf_fileHandle_.UnpinPage(newNode.getPageNum());
+            } else {
+                cur.leafInsert(pData, rid);
+            }
         }
     } else {
         // not leaf node
@@ -77,9 +81,88 @@ IX_BInsertUpEntry IX_IndexHandle::InsertEntry(IX_BNodeWapper& cur, void* pData, 
             }
             pf_fileHandle_.MarkDirty(next.getPageNum());
         }
-        unpinNode(next);
+        unpin(next);
     }
     return curEntry;
+}
+
+void IX_IndexHandle::insertIntoBucket(IX_BNodeWapper& leaf, void* pData, const RID& rid)
+{
+    int i = leaf.indexOf(pData);
+    assert(i >= 0);
+    RID bucketAddr = leaf.getRid(i);
+    if (isBucketAddr(rid)) {
+        RID tailAddr = findTail(bucketAddr);
+        // TODO: insert into bucket
+        assert(tailAddr != NULL_RID);
+    }
+}
+
+bool IX_IndexHandle::isBucketAddr(const RID& rid)
+{
+    EXTRACT_PAGE_NUM(pageNum, rid);
+    return pageNum < 0;
+}
+
+RID IX_IndexHandle::findTail(const RID& bucketAddr)
+{
+    RID cur = bucketAddr;
+    bool isTail = false;
+    while (!isTail) {
+        auto bucketList = readBucketListFrom(cur);
+        EXTRACT_SLOT_NUM(slot, cur);
+        auto bucket = bucketList.get(slot);
+        if (bucket.next() != NULL_RID) {
+            cur = bucket.next();
+        } else {
+            isTail = true;
+        }
+        unpin(bucketList);
+    }
+    return cur;
+}
+
+RID IX_IndexHandle::findNewBucket(IX_BNodeWapper& leaf, int i)
+{
+    RID rs = NULL_RID;
+    // find left bucketList that contain empty bucket
+    int p = i - 1;
+    while (p >= 0 && !isBucketAddr(leaf.getRid(p))) {
+        p--;
+    }
+    if (p >= 0) {
+        auto bucketList = readBucketListFrom(leaf.getRid(p));
+        if (!bucketList.isFull()){
+            rs = bucketList.allocateBucket();
+            markDirty(bucketList);
+        }
+        unpin(bucketList);
+    }
+
+    // find right if find left failed
+    if (rs == NULL_RID) {
+        p = i + 1;
+        while (p < leaf.size() && !isBucketAddr(leaf.getRid(p))) {
+            p ++;
+        }
+        if (p < leaf.size()){
+            auto bucketList = readBucketListFrom(leaf.getRid(p));
+            if (!bucketList.isFull()){
+                rs = bucketList.allocateBucket();
+                markDirty(bucketList);
+            }
+            unpin(bucketList);
+        }
+    }
+
+    // allocate new bucketList if find both left and right failed
+    if (rs == NULL_RID){
+        auto bucketList = createBucketList();
+        rs = bucketList.allocateBucket();
+        markDirty(bucketList);
+        unpin(bucketList);
+    }
+    return rs;
 }
 
 RC IX_IndexHandle::GetLeafEntryAddrEqualTo(void* pData, RID& rid) const
@@ -93,7 +176,7 @@ RC IX_IndexHandle::GetLeafEntryAddrEqualTo(void* pData, RID& rid) const
     auto leaf = readBNodeFrom(rid);
     SlotNum slot = leaf.indexOf(pData);
     rid = { leaf.getPageNum(), slot };
-    unpinNode(leaf);
+    unpin(leaf);
     return RC::SUCCESSS;
 }
 
@@ -109,7 +192,7 @@ RC IX_IndexHandle::GetLeafEntryAddrGreatThen(void* pData, RID& rid) const
     if (slot == fileHeader_.order)
         slot = -1;
     rid = { leaf.getPageNum(), slot };
-    return unpinNode(leaf);
+    return unpin(leaf);
 }
 
 RC IX_IndexHandle::GetFirstLeafEntryAddr(RID& rid) const
@@ -133,7 +216,7 @@ RC IX_IndexHandle::getLeafBy(void* pData, RID& rid, std::function<RID(void*, IX_
 
         // if not root_, unpin page
         if (i != 0)
-            RETURN_RC_IF_NOT_SUCCESS(unpinNode(cur));
+            RETURN_RC_IF_NOT_SUCCESS(unpin(cur));
 
         if (i != fileHeader_.height - 1)
             cur = readBNodeFrom(nextAddr);
@@ -171,6 +254,17 @@ IX_BNodeWapper IX_IndexHandle::readBNodeFrom(const RID& rid) const
     return IX_BNodeWapper(fileHeader_.attrLength, fileHeader_.attrType, data, rid);
 }
 
+IX_BBucketListWapper IX_IndexHandle::readBucketListFrom(const RID& rid) const
+{
+    assert(isBucketAddr(rid));
+    EXTRACT_PAGE_NUM(pageNum, rid);
+    PF_PageHandle page;
+    pf_fileHandle_.GetThisPage(pageNum, page);
+    char* data;
+    page.GetData(data);
+    return IX_BBucketListWapper(fileHeader_.bucketItemNum, data, pageNum);
+}
+
 IX_BNodeWapper IX_IndexHandle::createBNode()
 {
     PF_PageHandle page;
@@ -185,6 +279,22 @@ IX_BNodeWapper IX_IndexHandle::createBNode()
     fileHeader_.pageNums++;
     isHeaderChange_ = true;
     return IX_BNodeWapper(fileHeader_.attrLength, fileHeader_.attrType, data, { pageNum, 0 });
+}
+
+IX_BBucketListWapper IX_IndexHandle::createBucketList()
+{
+    PF_PageHandle page;
+    RC rc = pf_fileHandle_.AllocatePage(page);
+    assert(rc == RC::SUCCESSS);
+    IX_BBucketListWapper::initBucketList(page, fileHeader_.bucketItemNum);
+    char* data;
+    page.GetData(data);
+    PageNum pageNum;
+    page.GetPageNum(pageNum);
+
+    fileHeader_.pageNums++;
+    isHeaderChange_ = true;
+    return IX_BBucketListWapper(fileHeader_.bucketItemNum, data, pageNum);
 }
 
 RC IX_IndexHandle::forceHeader()

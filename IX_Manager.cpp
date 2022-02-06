@@ -110,4 +110,5 @@ void IX_Manager::setIndexHeader(PF_PageHandle& headerPage,
     hdr->height = 1;
     hdr->order = IX_BNodeWapper::countOrder(attrLength);
     hdr->root = { 1, 0 };
+    hdr->bucketItemNum = 5;
 }

@@ -1,5 +1,5 @@
-#include "PF_Internal.h"
 #include "PF_BufferManager.h"
+#include "PF_Internal.h"
 
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -79,8 +79,7 @@ RC PF_BufferManager::UnpinPage(int fd, PageNum pageNum)
     RETURN_ERROR_IF_NOT_PIN(key);
     auto desc = fileAllocated_[key];
     desc->pinCount--;
-    if (desc->pinCount == 0){
-        ForcePage(fd, pageNum);
+    if (desc->pinCount == 0) {
         unpinDispatcher_->push(key);
     }
     return RC::SUCCESSS;
@@ -126,6 +125,7 @@ int PF_BufferManager::getFreeBuffer()
         // based on buffer strategy, swap out the page
         const auto key = unpinDispatcher_->pop();
         const auto desc = fileAllocated_[key];
+        ForcePage(desc->fd, desc->pageNum);
         rs = desc->bufferIndex;
         fileAllocated_.erase(key);
     }
@@ -144,6 +144,7 @@ RC PF_BufferManager::ReadPageFromFile(int fd, PageNum pageNum, char*& data)
 
 RC PF_BufferManager::WritePageToFile(int fd, PageNum pageNum, char* data)
 {
+
     PF_UNIX_RETURN_IF_ERROR(lseek(fd, PF_PAGE_OFFSET(pageNum), SEEK_SET));
     int num = write(fd, data, PF_FILE_BLOCK_SIZE);
     PF_UNIX_RETURN_IF_ERROR(num);

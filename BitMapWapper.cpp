@@ -1,11 +1,10 @@
 #include "RM_Internal.h"
 
-
 BitMapWapper::BitMapWapper(char* bitmap, size_t bitsNum)
     :bitsNum_(bitsNum)
 {
     bitmap_ = (unsigned char*) bitmap;
-    bitmap_size_ = BITMAP_SIZE(bitsNum);
+    bitmap_size_ = memorySize(bitsNum);
 }
 
 void BitMapWapper::set(size_t i, bool b)

@@ -188,7 +188,6 @@ TEST_F(PF_FileHandleTest, PAGE_ALLOCAGE_AND_DISPOSE)
         EXPECT_EQ(0, pageNum);
         EXPECT_EQ(RC::SUCCESSS, handle_.DisposePage(pageNum));
     }
-
     for (int i = 0; i < PF_BUFFER_SIZE; i++) {
         PF_PageHandle pageHandle;
         EXPECT_EQ(RC::SUCCESSS, handle_.AllocatePage(pageHandle));

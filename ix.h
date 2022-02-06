@@ -56,6 +56,12 @@ public:
     RC ForcePages();
 
 private:
+    // in order to distinguish between nodeAddr and bucketAddr, pageNum of bucketAddr is negative number
+    static bool isBucketAddr(const RID& rid);
+    // buckets is orgainze as a single linked list, this function find tail of the linked list
+    RID findTail(const RID& bucketAddr);
+    RID findNewBucket(IX_BNodeWapper& leaf, int i);
+
     IX_BInsertUpEntry InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
     IX_BDeleteUpEntry DeleteEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
     void changeRoot(IX_BInsertUpEntry& entry);
@@ -63,10 +69,17 @@ private:
     RC getLeafBy(void* pData, RID& rid, std::function<RID(void*, IX_BNodeWapper&)> getNext) const;
 
     IX_BNodeWapper readBNodeFrom(const RID& rid) const;
-    IX_BNodeWapper createBNode();
+    IX_BBucketListWapper readBucketListFrom(const RID& rid) const;
 
+    IX_BNodeWapper createBNode();
+    IX_BBucketListWapper createBucketList();
+
+    void insertIntoBucket(IX_BNodeWapper& leaf, void* pData, const RID& rid);
     RC forceHeader();
-    inline RC unpinNode(IX_BNodeWapper& node) const { return pf_fileHandle_.UnpinPage(node.getPageNum()); }
+    inline RC markDirty(IX_BNodeWapper& node) const { return pf_fileHandle_.MarkDirty(node.getPageNum()); }
+    inline RC markDirty(IX_BBucketListWapper& bucketList) const { return pf_fileHandle_.MarkDirty(bucketList.getPageNum()); }
+    inline RC unpin(IX_BNodeWapper& node) const { return pf_fileHandle_.UnpinPage(node.getPageNum()); }
+    inline RC unpin(IX_BBucketListWapper& bucketList) const { return pf_fileHandle_.UnpinPage(bucketList.getPageNum()); }
 
 private:
     IX_BNodeWapper root_;

@@ -30,6 +30,7 @@ RC RM_Manager::CreateFile(const char* fileName, int recordSize)
     rfh->recordNumsOfEachPage = recordNums;
     pfh.MarkDirty(0);
     pfh.UnpinPage(0);
+    RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CloseFile(pfh));
     return RC::SUCCESSS;
 }
 

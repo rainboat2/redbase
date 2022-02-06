@@ -19,6 +19,7 @@
         }                                              \
     }
 
+// dfs delete directory
 int remove_dir(const char* path)
 {
     if (access(path, F_OK)) {

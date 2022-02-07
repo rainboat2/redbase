@@ -86,20 +86,57 @@ IX_BInsertUpEntry IX_IndexHandle::InsertEntry(IX_BNodeWapper& cur, void* pData, 
     return curEntry;
 }
 
+/*
+ * if pData corresponding to one RID only, the RID data store in node.
+ * else we store the RIDs into bucket, and we keep bucketAddr(pageNum is negitive) in node.
+ */
 void IX_IndexHandle::insertIntoBucket(IX_BNodeWapper& leaf, void* pData, const RID& rid)
 {
     int i = leaf.indexOf(pData);
     assert(i >= 0);
-    RID bucketAddr = leaf.getRid(i);
-    if (isBucketAddr(rid)) {
-        RID tailAddr = findTail(bucketAddr);
-        // TODO: insert into bucket
-        assert(tailAddr != NULL_RID);
+    RID tailAddr, curAddr = leaf.getRid(i);
+    if (isBucketAddr(curAddr)) {
+        tailAddr = findTail(curAddr);
+        tailAddr = appendBucketIfFull(leaf, tailAddr, i);
+    } else {
+        tailAddr = findNewBucketFrom(leaf, i);
+        leaf.setRid(i, tailAddr);
+        markDirty(leaf);
     }
+
+    auto bucketList = readBucketListFrom(tailAddr);
+    EXTRACT_SLOT_NUM(slot, tailAddr);
+    auto bucket = bucketList.get(slot);
+    if (!isBucketAddr(curAddr)) {
+        bucket.addItem(curAddr);
+    }
+    bucket.addItem(rid);
+    markDirty(bucketList);
+    unpin(bucketList);
+}
+
+RID IX_IndexHandle::appendBucketIfFull(IX_BNodeWapper& leaf, RID tailAddr, int pos)
+{
+    RID rs = tailAddr;
+    auto bucketList = readBucketListFrom(tailAddr);
+    EXTRACT_SLOT_NUM(slot, tailAddr);
+    auto bucket = bucketList.get(slot);
+
+    // append new bucket to the end if full.
+    if (bucket.isFull()) {
+        assert(bucket.next() == NULL_RID);
+        RID newBucketAddr = findNewBucketFrom(leaf, pos);
+        bucket.setNext(newBucketAddr);
+        rs = newBucketAddr;
+        markDirty(bucketList);
+    }
+    unpin(bucketList);
+    return rs;
 }
 
 bool IX_IndexHandle::isBucketAddr(const RID& rid)
 {
+    assert(rid != NULL_RID);
     EXTRACT_PAGE_NUM(pageNum, rid);
     return pageNum < 0;
 }
@@ -122,7 +159,7 @@ RID IX_IndexHandle::findTail(const RID& bucketAddr)
     return cur;
 }
 
-RID IX_IndexHandle::findNewBucket(IX_BNodeWapper& leaf, int i)
+RID IX_IndexHandle::findNewBucketFrom(IX_BNodeWapper& leaf, int i)
 {
     RID rs = NULL_RID;
     // find left bucketList that contain empty bucket
@@ -132,7 +169,7 @@ RID IX_IndexHandle::findNewBucket(IX_BNodeWapper& leaf, int i)
     }
     if (p >= 0) {
         auto bucketList = readBucketListFrom(leaf.getRid(p));
-        if (!bucketList.isFull()){
+        if (!bucketList.isFull()) {
             rs = bucketList.allocateBucket();
             markDirty(bucketList);
         }
@@ -143,11 +180,11 @@ RID IX_IndexHandle::findNewBucket(IX_BNodeWapper& leaf, int i)
     if (rs == NULL_RID) {
         p = i + 1;
         while (p < leaf.size() && !isBucketAddr(leaf.getRid(p))) {
-            p ++;
+            p++;
         }
-        if (p < leaf.size()){
+        if (p < leaf.size()) {
             auto bucketList = readBucketListFrom(leaf.getRid(p));
-            if (!bucketList.isFull()){
+            if (!bucketList.isFull()) {
                 rs = bucketList.allocateBucket();
                 markDirty(bucketList);
             }
@@ -156,7 +193,7 @@ RID IX_IndexHandle::findNewBucket(IX_BNodeWapper& leaf, int i)
     }
 
     // allocate new bucketList if find both left and right failed
-    if (rs == NULL_RID){
+    if (rs == NULL_RID) {
         auto bucketList = createBucketList();
         rs = bucketList.allocateBucket();
         markDirty(bucketList);
@@ -259,7 +296,7 @@ IX_BBucketListWapper IX_IndexHandle::readBucketListFrom(const RID& rid) const
     assert(isBucketAddr(rid));
     EXTRACT_PAGE_NUM(pageNum, rid);
     PF_PageHandle page;
-    pf_fileHandle_.GetThisPage(pageNum, page);
+    pf_fileHandle_.GetThisPage(-pageNum, page);
     char* data;
     page.GetData(data);
     return IX_BBucketListWapper(fileHeader_.bucketItemNum, data, pageNum);

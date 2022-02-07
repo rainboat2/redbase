@@ -118,11 +118,16 @@ public:
 
     inline RID get(int i) const { return rids_[i]; };
 
-    inline RID next() const { return rids_[itemNum_ - 1]; };
-    inline int size() const { return *size_; }
-    inline bool isFull() const { return *size_ == itemNum_ - 1; }
+    void addItem(RID rid);
 
-    inline static int memorySize(int itemNum) { return itemNum * sizeof(RID) + sizeof(int); }
+    inline RID next() const { return rids_[itemNum_]; };
+    inline void setNext(RID next) { rids_[itemNum_] = next; }
+    inline int size() const { return *size_; }
+    inline bool isFull() const { return *size_ == itemNum_; }
+
+public:
+    inline static int memorySize(int itemNum) { return (itemNum + 1) * sizeof(RID) + sizeof(int); }
+    static void initBucket(IX_BBucketWapper& bucket);
 
 private:
     int itemNum_;

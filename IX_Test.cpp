@@ -215,6 +215,15 @@ TEST_F(IX_IndexHandleTest, IX_INDEX_INSERT_TEST)
     }
 }
 
+TEST_F(IX_IndexHandleTest, IX_INDEX_SAME_VALUE_INSERT_TEST)
+{
+    for (int i = 1; i < 350; i++) {
+        for (int j = 0; j < 10; j++) {
+            EXPECT_EQ(indexHandle_.InsertEntry(&i, { i, i }), RC::SUCCESSS);
+        }
+    }
+}
+
 TEST_F(IX_IndexHandleTest, IX_INDEX_DELETE_TEST)
 {
     for (int i = 10000; i >= 0; i--) {
@@ -222,7 +231,7 @@ TEST_F(IX_IndexHandleTest, IX_INDEX_DELETE_TEST)
         EXPECT_EQ(rc, RC::SUCCESSS);
     }
     int target = 300;
-    EXPECT_EQ(RC::SUCCESSS, indexHandle_.DeleteEntry(&target, {target, target}));
+    EXPECT_EQ(RC::SUCCESSS, indexHandle_.DeleteEntry(&target, { target, target }));
 }
 
 class IX_IndexScanTest : public testing::Test {

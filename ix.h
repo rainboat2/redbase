@@ -60,8 +60,9 @@ private:
     // in order to distinguish between nodeAddr and bucketAddr, pageNum of bucketAddr is negative number
     static bool isBucketAddr(const RID& rid);
     // buckets is orgainze as a single linked list, this function find a not full bucket in linked list
-    RID findNotFullBucket(const RID& bucketAddr, IX_BNodeWapper& leaf, int i);
+    RID findNotFullBucket(const RID& bucketAddr, IX_BNodeWapper& leaf, int);
     RID findNewBucketFrom(IX_BNodeWapper& leaf, int i);
+    RID appendBucketIfFull(IX_BNodeWapper& leaf, RID tailAddr, int i);
 
     IX_BInsertUpEntry InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
     IX_BDeleteUpEntry DeleteEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);

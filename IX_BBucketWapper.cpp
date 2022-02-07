@@ -11,7 +11,7 @@ void IX_BBucketWapper::addItem(RID rid)
 {
     assert(!isFull());
     int i = 0;
-    while (i < itemNum_ && get(i) == NULL_RID)
+    while (i < itemNum_ && get(i) != NULL_RID)
         i++;
     assert(i != itemNum_);
     rids_[i] = rid;

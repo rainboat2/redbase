@@ -13,6 +13,7 @@ DIRS        = $(BUILD_DIR) $(LIB_DIR) $(OBJECTS_DIR) $(TARGET_DIR)
 
 # utilites
 UTILITES = redbase.cpp dbcreate.cpp dbdestroy.cpp
+TARGETS  = $(addprefix $(TARGET_DIR)/, $(UTILITES:.cpp=))
 
 # sources
 TOOL_SOURCES = RedbaseComparator.cpp PrintError.cpp BitMapWapper.cpp
@@ -41,13 +42,13 @@ SM_LIB        = $(LIB_DIR)/libsm.a
 READBASE_LIBS = $(TOOL_LIB) $(PF_LIB) $(RM_LIB) $(IX_LIB) $(SM_LIB)
 
 # generate excutable file
-all: make_dirs $(UTILITES:.cpp=) redbaseTest
+all: make_dirs $(TARGETS) $(TARGET_DIR)/redbaseTest
 
-$(UTILITES:.cpp=): % : %.cpp $(READBASE_LIBS)
-	$(CC) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $(TARGET_DIR)/$@
+$(TARGETS):  $(TARGET_DIR)/% : %.cpp $(READBASE_LIBS)
+	$(CC) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
-redbaseTest: $(OBJECTS) ${READBASE_LIBS}
-	$(CC) $(CPPFLAGS) $(TEST_OBJECTS) $(LDFLAGS) $(LIBS) -o $(TARGET_DIR)/$@
+$(TARGET_DIR)/redbaseTest: $(OBJECTS) ${READBASE_LIBS}
+	$(CC) $(CPPFLAGS) $(TEST_OBJECTS) $(LDFLAGS) $(LIBS) -o $@
 
 # generate library file
 $(TOOL_LIB): $(TOOL_OBJECTS)
@@ -90,7 +91,7 @@ clean:
 	rm -rf $(DIRS)
 print:
 	echo $(OBJECTS)
-run_test: redbaseTest
+run_test: $(TARGET_DIR)/redbaseTest
 	$(TARGET_DIR)/redbaseTest $(cmd_args)
 make_dirs:
 	mkdir -p $(DIRS)

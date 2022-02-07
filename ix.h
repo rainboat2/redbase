@@ -33,9 +33,12 @@ private:
     PF_Manager& pf_manager_;
 };
 
+class IX_BBucketIterator;
+
 class IX_IndexHandle {
     friend class IX_Manager;
     friend class IX_IndexScan;
+    friend class IX_BBucketIterator;
 
 public:
     IX_IndexHandle();
@@ -90,6 +93,24 @@ private:
     bool isHeaderChange_;
 };
 
+class IX_BBucketIterator {
+    friend class IX_IndexHandle;
+
+private:
+    IX_BBucketIterator(IX_IndexHandle* indexHandle, RID bucketAddr);
+
+public:
+    ~IX_BBucketIterator();
+    bool hasNext() const;
+    RID next();
+
+private:
+    IX_IndexHandle* indexHandle_;
+    IX_BBucketListWapper bucketList_;
+    IX_BBucketWapper bucket_;
+    int pos_;
+};
+
 class IX_IndexScan {
 public:
     IX_IndexScan();
@@ -113,6 +134,7 @@ private:
     CompOp compOp_;
     void* value_;
     ClientHint pinHint_;
+
     IX_BNodeWapper curNode_;
     RID cur_;
 };

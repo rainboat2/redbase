@@ -10,18 +10,30 @@ IX_BBucketWapper::IX_BBucketWapper(int bucketItemNum, char* data)
 void IX_BBucketWapper::addItem(RID rid)
 {
     assert(!isFull());
-    int i = 0;
-    while (i < itemNum_ && get(i) != NULL_RID)
-        i++;
-    assert(i != itemNum_);
-    rids_[i] = rid;
+    rids_[size()] = rid;
     *size_ += 1;
+}
+
+bool IX_BBucketWapper::deleteItem(RID rid)
+{
+    int index = -1;
+    for (int i = 0; i < size(); i++) {
+        if (get(i) == rid) {
+            index = i;
+            break;
+        }
+    }
+    if (index == -1)
+        return false;
+    for (int i = index; i < size() - 1; i++) {
+        rids_[i] = rids_[i + 1];
+    }
+    *size_ -= 1;
+    return true;
 }
 
 void IX_BBucketWapper::initBucket(IX_BBucketWapper& bucket)
 {
     *bucket.size_ = 0;
-    for (int i = 0; i <= bucket.itemNum_; i++) {
-        bucket.rids_[i] = NULL_RID;
-    }
+    bucket.setNext(NULL_RID);
 }

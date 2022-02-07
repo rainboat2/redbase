@@ -19,7 +19,8 @@ TARGETS  = $(addprefix $(TARGET_DIR)/, $(UTILITES:.cpp=))
 TOOL_SOURCES = RedbaseComparator.cpp PrintError.cpp BitMapWapper.cpp
 PF_SOURCES   = PF_PageHandle.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp
 RM_SOURCES   = RM_RID.cpp RM_Manager.cpp RM_Record.cpp RM_FileHandle.cpp RM_FileScan.cpp
-IX_SOURCES   = IX_Manager.cpp IX_IndexHandle.cpp IX_BNodeWapper.cpp IX_IndexScan.cpp IX_BBucketListWapper.cpp IX_BBucketWapper.cpp
+IX_SOURCES   = IX_Manager.cpp IX_IndexHandle.cpp IX_BNodeWapper.cpp IX_IndexScan.cpp \
+               IX_BBucketListWapper.cpp IX_BBucketWapper.cpp IX_BBucketIterator.cpp
 SM_SOURCES   = SM_Manager.cpp
 TEST_SOURCES = PF_Test.cpp RM_Test.cpp IX_Test.cpp
 SOURCES      = $(TOOL_SOURCES) $(PF_SOURCES) $(RM_SOURCES) $(TEST_SOURCES) $(IX_SOURCES) $(SM_SOURCES)

@@ -113,12 +113,14 @@ class IX_BBucketWapper {
     friend class IX_BBucketListWapper;
 
 public:
+    IX_BBucketWapper() = default;
     IX_BBucketWapper(int itemNum, char* data);
     ~IX_BBucketWapper() = default;
 
     inline RID get(int i) const { return rids_[i]; };
 
     void addItem(RID rid);
+    bool deleteItem(RID rid);
 
     inline RID next() const { return rids_[itemNum_]; };
     inline void setNext(RID next) { rids_[itemNum_] = next; }
@@ -138,6 +140,7 @@ private:
 // bucketList: size, bitmap, [bucket, bucket, ....]
 class IX_BBucketListWapper {
 public:
+    IX_BBucketListWapper() = default;
     IX_BBucketListWapper(int bucketItemNum, char* data, PageNum pageNum);
     ~IX_BBucketListWapper() = default;
 

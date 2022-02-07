@@ -96,8 +96,7 @@ void IX_IndexHandle::insertIntoBucket(IX_BNodeWapper& leaf, void* pData, const R
     assert(i >= 0);
     RID tailAddr, curAddr = leaf.getRid(i);
     if (isBucketAddr(curAddr)) {
-        tailAddr = findTail(curAddr);
-        tailAddr = appendBucketIfFull(leaf, tailAddr, i);
+        tailAddr = findNotFullBucket(curAddr, leaf, i);
     } else {
         tailAddr = findNewBucketFrom(leaf, i);
         leaf.setRid(i, tailAddr);
@@ -115,25 +114,6 @@ void IX_IndexHandle::insertIntoBucket(IX_BNodeWapper& leaf, void* pData, const R
     unpin(bucketList);
 }
 
-RID IX_IndexHandle::appendBucketIfFull(IX_BNodeWapper& leaf, RID tailAddr, int pos)
-{
-    RID rs = tailAddr;
-    auto bucketList = readBucketListFrom(tailAddr);
-    EXTRACT_SLOT_NUM(slot, tailAddr);
-    auto bucket = bucketList.get(slot);
-
-    // append new bucket to the end if full.
-    if (bucket.isFull()) {
-        assert(bucket.next() == NULL_RID);
-        RID newBucketAddr = findNewBucketFrom(leaf, pos);
-        bucket.setNext(newBucketAddr);
-        rs = newBucketAddr;
-        markDirty(bucketList);
-    }
-    unpin(bucketList);
-    return rs;
-}
-
 bool IX_IndexHandle::isBucketAddr(const RID& rid)
 {
     assert(rid != NULL_RID);
@@ -141,18 +121,24 @@ bool IX_IndexHandle::isBucketAddr(const RID& rid)
     return pageNum < 0;
 }
 
-RID IX_IndexHandle::findTail(const RID& bucketAddr)
+RID IX_IndexHandle::findNotFullBucket(const RID& bucketAddr, IX_BNodeWapper& leaf, int i)
 {
     RID cur = bucketAddr;
-    bool isTail = false;
-    while (!isTail) {
+    bool find = false;
+    while (!find) {
         auto bucketList = readBucketListFrom(cur);
         EXTRACT_SLOT_NUM(slot, cur);
         auto bucket = bucketList.get(slot);
-        if (bucket.next() != NULL_RID) {
+        if (bucket.isFull() && bucket.next() != NULL_RID) {
             cur = bucket.next();
+        } else if (bucket.isFull() && bucket.next() == NULL_RID) {
+            // reach the tail of the linked list
+            RID newBucketAddr = findNewBucketFrom(leaf, i);
+            bucket.setNext(newBucketAddr);
+            cur = newBucketAddr;
+            find = true;
         } else {
-            isTail = true;
+            find = true;
         }
         unpin(bucketList);
     }

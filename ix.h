@@ -56,10 +56,11 @@ public:
     RC ForcePages();
 
 private:
+    void insertIntoBucket(IX_BNodeWapper& leaf, void* pData, const RID& rid);
     // in order to distinguish between nodeAddr and bucketAddr, pageNum of bucketAddr is negative number
     static bool isBucketAddr(const RID& rid);
-    // buckets is orgainze as a single linked list, this function find tail of the linked list
-    RID findTail(const RID& bucketAddr);
+    // buckets is orgainze as a single linked list, this function find a not full bucket in linked list
+    RID findNotFullBucket(const RID& bucketAddr, IX_BNodeWapper& leaf, int i);
     RID findNewBucketFrom(IX_BNodeWapper& leaf, int i);
 
     IX_BInsertUpEntry InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level);
@@ -74,9 +75,6 @@ private:
     IX_BNodeWapper createBNode();
     IX_BBucketListWapper createBucketList();
 
-    void insertIntoBucket(IX_BNodeWapper& leaf, void* pData, const RID& rid);
-
-    RID appendBucketIfFull(IX_BNodeWapper& leaf, RID tailAddr, int pos);
     RC forceHeader();
     inline RC markDirty(IX_BNodeWapper& node) const { return pf_fileHandle_.MarkDirty(node.getPageNum()); }
     inline RC markDirty(IX_BBucketListWapper& bucketList) const { return pf_fileHandle_.MarkDirty(-bucketList.getPageNum()); }

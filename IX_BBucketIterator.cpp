@@ -1,6 +1,11 @@
 #include "ix.h"
 
-IX_BBucketIterator::IX_BBucketIterator(IX_IndexHandle* indexHandle, RID bucketAddr)
+IX_BBucketIterator::IX_BBucketIterator()
+    : indexHandle_(nullptr)
+{
+}
+
+IX_BBucketIterator::IX_BBucketIterator(const IX_IndexHandle* indexHandle, RID bucketAddr)
     : indexHandle_(indexHandle)
     , pos_(0)
 {
@@ -12,7 +17,8 @@ IX_BBucketIterator::IX_BBucketIterator(IX_IndexHandle* indexHandle, RID bucketAd
 
 IX_BBucketIterator::~IX_BBucketIterator()
 {
-    indexHandle_->unpin(bucketList_);
+    if (indexHandle_ != nullptr)
+        indexHandle_->unpin(bucketList_);
 }
 
 bool IX_BBucketIterator::hasNext() const

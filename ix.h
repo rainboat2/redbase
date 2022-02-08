@@ -73,6 +73,8 @@ private:
 
     RC getLeafBy(void* pData, RID& rid, std::function<RID(void*, IX_BNodeWapper&)> getNext) const;
 
+    IX_BBucketIterator getBucketIterator(const RID& rid) const;
+
     IX_BNodeWapper readBNodeFrom(const RID& rid) const;
     IX_BBucketListWapper readBucketListFrom(const RID& rid) const;
 
@@ -97,15 +99,16 @@ class IX_BBucketIterator {
     friend class IX_IndexHandle;
 
 private:
-    IX_BBucketIterator(IX_IndexHandle* indexHandle, RID bucketAddr);
+    IX_BBucketIterator(const IX_IndexHandle* indexHandle, RID bucketAddr);
 
 public:
+    IX_BBucketIterator();
     ~IX_BBucketIterator();
     bool hasNext() const;
     RID next();
 
 private:
-    IX_IndexHandle* indexHandle_;
+    const IX_IndexHandle* indexHandle_;
     IX_BBucketListWapper bucketList_;
     IX_BBucketWapper bucket_;
     int pos_;
@@ -124,11 +127,16 @@ public:
 
 private:
     RC findFirstNode();
+    inline RID curRid()
+    {
+        EXTRACT_SLOT_NUM(slot, curPos_);
+        return curNode_.getRid(slot);
+    }
+
+    void moveToNextValidEntry();
     bool moveToNextEntry();
 
 private:
-    bool isOpen_;
-    bool hasNext_;
     IX_IndexHandle* indexHandle_;
     std::function<int(const void*, const void*)> cmp_;
     CompOp compOp_;
@@ -136,7 +144,10 @@ private:
     ClientHint pinHint_;
 
     IX_BNodeWapper curNode_;
-    RID cur_;
+    IX_BBucketIterator bucketIt_;
+    RID curPos_;
+    bool isOpen_;
+    bool hasNextBucket_;
 };
 
 #endif

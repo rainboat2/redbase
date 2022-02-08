@@ -288,6 +288,12 @@ void IX_IndexHandle::changeRoot(IX_BInsertUpEntry& entry)
     root_ = newRoot;
 }
 
+IX_BBucketIterator IX_IndexHandle::getBucketIterator(const RID& rid) const
+{
+    assert(isBucketAddr(rid));
+    return IX_BBucketIterator(this, rid);
+}
+
 IX_BNodeWapper IX_IndexHandle::readBNodeFrom(const RID& rid) const
 {
     PageNum pageNum;

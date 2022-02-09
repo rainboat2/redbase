@@ -23,7 +23,7 @@ IX_BBucketIterator::~IX_BBucketIterator()
 
 bool IX_BBucketIterator::hasNext() const
 {
-    return pos_ == bucket_.size() && bucket_.next() == NULL_RID;
+    return pos_ != bucket_.size() || bucket_.next() != NULL_RID;
 }
 
 RID IX_BBucketIterator::next()

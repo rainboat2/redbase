@@ -153,6 +153,7 @@ public:
     inline PageNum getPageNum() const { return pageNum_; }
 
     RID allocateBucket();
+    void freeBucket(int i);
 
     static void initBucketList(PF_PageHandle& page, int bucketItemNum);
 

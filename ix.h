@@ -49,16 +49,18 @@ public:
     RC InsertEntry(void* pData, const RID& rid);
     RC DeleteEntry(void* pData, const RID& rid);
 
+    RC ForcePages();
+
+private:
     // find entry in leaf node that pData first appear, -1 will be set to slotNum if no entry can be found
     RC GetLeafEntryAddrEqualTo(void* pData, RID& rid) const;
 
     // find leaf node that element greater than pData first appear
     RC GetLeafEntryAddrGreatThen(void* pData, RID& rid) const;
+    
     // find first leaf node
     RC GetFirstLeafEntryAddr(RID& rid) const;
-    RC ForcePages();
 
-private:
     void insertIntoBucket(IX_BNodeWapper& leaf, void* pData, const RID& rid);
     // in order to distinguish between nodeAddr and bucketAddr, pageNum of bucketAddr is negative number
     static bool isBucketAddr(const RID& rid);
@@ -80,6 +82,8 @@ private:
 
     IX_BNodeWapper createBNode();
     IX_BBucketListWapper createBucketList();
+
+    bool deleteItemFromLeaf(IX_BNodeWapper& leaf, void* pData, const RID delItem);
 
     RC forceHeader();
     inline RC markDirty(IX_BNodeWapper& node) const { return pf_fileHandle_.MarkDirty(node.getPageNum()); }

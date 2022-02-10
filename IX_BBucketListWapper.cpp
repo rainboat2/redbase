@@ -33,6 +33,13 @@ RID IX_BBucketListWapper::allocateBucket()
     return { pageNum_, i };
 }
 
+void IX_BBucketListWapper::freeBucket(int i){
+    BitMapWapper map(bitmap_, bucketListSize_);
+    assert(map.get(i) == true);
+    map.set(i, false);
+    *size_ = *size_ - 1;
+}
+
 void IX_BBucketListWapper::initBucketList(PF_PageHandle& page, int bucketItemNum)
 {
     assert(bucketItemNum > 0);

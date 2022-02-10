@@ -38,6 +38,67 @@ IX_BDeleteUpEntry IX_IndexHandle::DeleteEntry(IX_BNodeWapper& cur, void* pData, 
     return curEntry;
 }
 
+bool IX_IndexHandle::deleteItemFromLeaf(IX_BNodeWapper& leaf, void* pData, const RID delItem)
+{
+    int i = leaf.indexOf(pData);
+    if (i == -1)
+        return false;
+    bool remove = false;
+    RID addr = leaf.getRid(i);
+    if (isBucketAddr(addr)) {
+        auto head = readBucketListFrom(addr);
+        EXTRACT_SLOT_NUM(slot, addr);
+        auto bucket = head.get(slot);
+
+        remove = bucket.deleteItem(delItem);
+        if (remove) {
+            // find and remove target in the first bucket
+            if (bucket.size() == 0) {
+                if (bucket.next() == NULL_RID) {
+                    remove = leaf.leafRemove(pData, delItem);
+                } else {
+                    head.freeBucket(slot);
+                    leaf.setRid(i, bucket.next());
+                }
+                markDirty(leaf);
+            }
+            markDirty(head);
+        } else {
+            // remove target in following buckets
+            auto curList = readBucketListFrom(addr);
+            addr.GetSlotNum(slot);
+            auto cur = curList.get(slot);
+            while (!remove && cur.next() != NULL_RID) {
+                RID nextAddr = cur.next();
+                auto nextList = readBucketListFrom(nextAddr);
+                EXTRACT_SLOT_NUM(nextSlot, nextAddr);
+                auto nextBucket = nextList.get(nextSlot);
+
+                remove = nextBucket.deleteItem(delItem);
+                if (remove){
+                    if (nextBucket.size() == 0){
+                        cur.setNext(nextBucket.next());
+                        nextList.freeBucket(nextSlot);
+                        markDirty(nextList);
+                        markDirty(curList);
+                    }
+                    unpin(nextList);
+                    unpin(curList);
+                }else{
+                    unpin(curList)
+                    curList = nextList;
+                }
+            }
+            if (cur.next() == NULL_RID){
+                unpin(curList);
+            }
+        }
+    } else {
+        remove = leaf.leafRemove(pData, delItem);
+    }
+    return remove;
+}
+
 RC IX_IndexHandle::InsertEntry(void* pData, const RID& rid)
 {
     IX_BInsertUpEntry up = InsertEntry(root_, pData, rid, 0);

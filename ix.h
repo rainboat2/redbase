@@ -57,7 +57,7 @@ private:
 
     // find leaf node that element greater than pData first appear
     RC GetLeafEntryAddrGreatThen(void* pData, RID& rid) const;
-    
+
     // find first leaf node
     RC GetFirstLeafEntryAddr(RID& rid) const;
 
@@ -83,7 +83,7 @@ private:
     IX_BNodeWapper createBNode();
     IX_BBucketListWapper createBucketList();
 
-    bool deleteItemFromLeaf(IX_BNodeWapper& leaf, void* pData, const RID delItem);
+    bool deleteItemFromLeaf(IX_BNodeWapper& leaf, void* pData, const RID& delItem);
 
     RC forceHeader();
     inline RC markDirty(IX_BNodeWapper& node) const { return pf_fileHandle_.MarkDirty(node.getPageNum()); }

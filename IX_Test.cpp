@@ -259,6 +259,19 @@ TEST_F(IX_IndexHandleTest, IX_INDEX_DELETE_TEST)
     EXPECT_EQ(RC::SUCCESSS, indexHandle_.DeleteEntry(&target, { target, target }));
 }
 
+TEST_F(IX_IndexHandleTest, IX_INDEX_DELETE_MULTI_TEST){
+    for (int i = 0; i < 5; i++){
+        for (int j = 0; j < 11; j++){
+            EXPECT_EQ(indexHandle_.InsertEntry(&i, {j, j}), RC::SUCCESSS);
+        }
+    }
+
+    int target = 3;
+    for (int i = 0; i < 11; i++){
+        EXPECT_EQ(RC::SUCCESSS, indexHandle_.DeleteEntry(&target, {i, i}));
+    }
+}
+
 class IX_IndexScanTest : public testing::Test {
 protected:
     void SetUp() override

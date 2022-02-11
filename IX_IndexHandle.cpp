@@ -22,8 +22,8 @@ IX_BDeleteUpEntry IX_IndexHandle::DeleteEntry(IX_BNodeWapper& cur, void* pData, 
     IX_BDeleteUpEntry curEntry { false };
     if (level == fileHeader_.height - 1) {
         // leaf node
-        cur.leafRemove(pData, rid);
-        if (cur.size() < fileHeader_.order / 2)
+        bool remove = deleteItemFromLeaf(cur, pData, rid);
+        if (remove && cur.size() < fileHeader_.order / 2)
             curEntry.needMerge = true;
     } else {
         // not leaf node
@@ -38,7 +38,7 @@ IX_BDeleteUpEntry IX_IndexHandle::DeleteEntry(IX_BNodeWapper& cur, void* pData, 
     return curEntry;
 }
 
-bool IX_IndexHandle::deleteItemFromLeaf(IX_BNodeWapper& leaf, void* pData, const RID delItem)
+bool IX_IndexHandle::deleteItemFromLeaf(IX_BNodeWapper& leaf, void* pData, const RID& delItem)
 {
     int i = leaf.indexOf(pData);
     if (i == -1)
@@ -55,10 +55,10 @@ bool IX_IndexHandle::deleteItemFromLeaf(IX_BNodeWapper& leaf, void* pData, const
             // find and remove target in the first bucket
             if (bucket.size() == 0) {
                 if (bucket.next() == NULL_RID) {
-                    remove = leaf.leafRemove(pData, delItem);
+                    remove = leaf.leafRemove(pData, leaf.getRid(i));
                 } else {
-                    head.freeBucket(slot);
                     leaf.setRid(i, bucket.next());
+                    head.freeBucket(slot);
                 }
                 markDirty(leaf);
             }
@@ -68,15 +68,19 @@ bool IX_IndexHandle::deleteItemFromLeaf(IX_BNodeWapper& leaf, void* pData, const
             auto curList = readBucketListFrom(addr);
             addr.GetSlotNum(slot);
             auto cur = curList.get(slot);
-            while (!remove && cur.next() != NULL_RID) {
+            while (!remove) {
                 RID nextAddr = cur.next();
+                if (nextAddr == NULL_RID) {
+                    unpin(curList);
+                    break;
+                }
                 auto nextList = readBucketListFrom(nextAddr);
                 EXTRACT_SLOT_NUM(nextSlot, nextAddr);
                 auto nextBucket = nextList.get(nextSlot);
 
                 remove = nextBucket.deleteItem(delItem);
-                if (remove){
-                    if (nextBucket.size() == 0){
+                if (remove) {
+                    if (nextBucket.size() == 0) {
                         cur.setNext(nextBucket.next());
                         nextList.freeBucket(nextSlot);
                         markDirty(nextList);
@@ -84,15 +88,13 @@ bool IX_IndexHandle::deleteItemFromLeaf(IX_BNodeWapper& leaf, void* pData, const
                     }
                     unpin(nextList);
                     unpin(curList);
-                }else{
-                    unpin(curList)
+                } else {
+                    unpin(curList);
                     curList = nextList;
                 }
             }
-            if (cur.next() == NULL_RID){
-                unpin(curList);
-            }
         }
+        unpin(head);
     } else {
         remove = leaf.leafRemove(pData, delItem);
     }

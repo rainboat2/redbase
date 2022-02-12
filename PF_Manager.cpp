@@ -37,13 +37,13 @@ RC PF_Manager::CreateFile(const char* filename)
     }
 
     PF_UNIX_RETURN_IF_ERROR(close(fd));
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_Manager::DestroyFile(const char* filename)
 {
     PF_UNIX_RETURN_IF_ERROR(unlink(filename));
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_Manager::OpenFile(const char* filename, PF_FileHandle& fileHandle)
@@ -67,7 +67,7 @@ RC PF_Manager::OpenFile(const char* filename, PF_FileHandle& fileHandle)
     if (num < PF_FILE_BLOCK_SIZE)
         return RC::PF_INCOMPLETEREAD;
     fileHandle.header_ = *((PF_FileHeader*)buffer);
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_Manager::CloseFile(PF_FileHandle& fileHandle)
@@ -78,7 +78,7 @@ RC PF_Manager::CloseFile(PF_FileHandle& fileHandle)
     fileHandle.filename_ = nullptr;
     PF_UNIX_RETURN_IF_ERROR(close(fileHandle.fd_));
     fileHandle.fd_ = -1;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_Manager::AllocateBlock(char*& buffer)

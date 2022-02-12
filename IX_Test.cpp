@@ -157,11 +157,11 @@ TEST_F(IX_ManagerTest, IX_CREAT_DESTORY_TEST)
     auto name = ix_manager_->getFileName(TEST_FILE_, INDEX_NO_);
 
     RC rc = ix_manager_->CreateIndex(TEST_FILE_, INDEX_NO_, attrType_, attrLength_);
-    EXPECT_EQ(rc, RC::SUCCESSS);
+    EXPECT_EQ(rc, RC::SUCCESS);
     EXPECT_EQ(0, access(name.c_str(), F_OK));
 
     rc = ix_manager_->DestroyIndex(TEST_FILE_, INDEX_NO_);
-    EXPECT_EQ(rc, RC::SUCCESSS);
+    EXPECT_EQ(rc, RC::SUCCESS);
     EXPECT_NE(0, access(name.c_str(), F_OK));
 }
 
@@ -171,10 +171,10 @@ TEST_F(IX_ManagerTest, IX_OPEN_AND_CLOSE_TEST)
 
     IX_IndexHandle indexHandle;
     RC rc = ix_manager_->OpenIndex(TEST_FILE_, INDEX_NO_, indexHandle);
-    EXPECT_EQ(rc, RC::SUCCESSS);
+    EXPECT_EQ(rc, RC::SUCCESS);
 
     rc = ix_manager_->CloseIndex(indexHandle);
-    EXPECT_EQ(rc, RC::SUCCESSS);
+    EXPECT_EQ(rc, RC::SUCCESS);
 
     ix_manager_->DestroyIndex(TEST_FILE_, INDEX_NO_);
 }
@@ -211,7 +211,7 @@ TEST_F(IX_IndexHandleTest, IX_INDEX_INSERT_TEST)
 {
     for (int i = 10000; i >= 0; i--) {
         RC rc = indexHandle_.InsertEntry(&i, { i, i });
-        EXPECT_EQ(rc, RC::SUCCESSS);
+        EXPECT_EQ(rc, RC::SUCCESS);
     }
 }
 
@@ -219,7 +219,7 @@ TEST_F(IX_IndexHandleTest, IX_INDEX_MUTI_VALUE_INSERT_TEST)
 {
     for (int i = 1; i < 350; i++) {
         for (int j = 0; j < 10; j++) {
-            EXPECT_EQ(indexHandle_.InsertEntry(&i, { i, i }), RC::SUCCESSS);
+            EXPECT_EQ(indexHandle_.InsertEntry(&i, { i, i }), RC::SUCCESS);
         }
     }
 }
@@ -228,17 +228,17 @@ TEST_F(IX_IndexHandleTest, IX_INDEX_PERSISTENCE_TEST)
 {
     for (int i = 10000; i >= 0; i--) {
         RC rc = indexHandle_.InsertEntry(&i, { i, i });
-        EXPECT_EQ(rc, RC::SUCCESSS);
+        EXPECT_EQ(rc, RC::SUCCESS);
     }
     ix_manager_->CloseIndex(indexHandle_);
     ix_manager_->OpenIndex(TEST_FILE_, INDEX_NO_, indexHandle_);
 
     IX_IndexScan scan;
     int target = 10000 / 2;
-    EXPECT_EQ(RC::SUCCESSS, scan.OpenScan(indexHandle_, CompOp::NE, &target));
+    EXPECT_EQ(RC::SUCCESS, scan.OpenScan(indexHandle_, CompOp::NE, &target));
     RID rid;
     int cnt = 0;
-    while (scan.GetNextEntry(rid) == RC::SUCCESSS) {
+    while (scan.GetNextEntry(rid) == RC::SUCCESS) {
         while (cnt == target)
             cnt++;
         EXTRACT_PAGE_NUM(pageNum, rid);
@@ -246,29 +246,29 @@ TEST_F(IX_IndexHandleTest, IX_INDEX_PERSISTENCE_TEST)
         cnt++;
     }
     EXPECT_EQ(cnt, 10001);
-    EXPECT_EQ(RC::SUCCESSS, scan.CloseScan());
+    EXPECT_EQ(RC::SUCCESS, scan.CloseScan());
 }
 
 TEST_F(IX_IndexHandleTest, IX_INDEX_DELETE_TEST)
 {
     for (int i = 10000; i >= 0; i--) {
         RC rc = indexHandle_.InsertEntry(&i, { i, i });
-        EXPECT_EQ(rc, RC::SUCCESSS);
+        EXPECT_EQ(rc, RC::SUCCESS);
     }
     int target = 300;
-    EXPECT_EQ(RC::SUCCESSS, indexHandle_.DeleteEntry(&target, { target, target }));
+    EXPECT_EQ(RC::SUCCESS, indexHandle_.DeleteEntry(&target, { target, target }));
 }
 
 TEST_F(IX_IndexHandleTest, IX_INDEX_DELETE_MULTI_TEST){
     for (int i = 0; i < 5; i++){
         for (int j = 0; j < 11; j++){
-            EXPECT_EQ(indexHandle_.InsertEntry(&i, {j, j}), RC::SUCCESSS);
+            EXPECT_EQ(indexHandle_.InsertEntry(&i, {j, j}), RC::SUCCESS);
         }
     }
 
     int target = 3;
     for (int i = 0; i < 11; i++){
-        EXPECT_EQ(RC::SUCCESSS, indexHandle_.DeleteEntry(&target, {i, i}));
+        EXPECT_EQ(RC::SUCCESS, indexHandle_.DeleteEntry(&target, {i, i}));
     }
 }
 
@@ -313,37 +313,37 @@ TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_EQ_TEST)
     constructDefaultIndex(ENTRY_SIZE_);
     IX_IndexScan scan;
     int target = ENTRY_SIZE_ / 2;
-    EXPECT_EQ(RC::SUCCESSS, scan.OpenScan(indexHandle_, CompOp::EQ, &target));
+    EXPECT_EQ(RC::SUCCESS, scan.OpenScan(indexHandle_, CompOp::EQ, &target));
     RID rid;
     int cnt = 0;
-    while (scan.GetNextEntry(rid) == RC::SUCCESSS) {
+    while (scan.GetNextEntry(rid) == RC::SUCCESS) {
         EXTRACT_PAGE_NUM(pageNum, rid);
         EXPECT_EQ(target, pageNum);
         cnt++;
     }
     EXPECT_EQ(cnt, 1);
-    EXPECT_EQ(RC::SUCCESSS, scan.CloseScan());
+    EXPECT_EQ(RC::SUCCESS, scan.CloseScan());
 }
 
 TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_MUTIL_VALUE_EQ_TEST)
 {
     for (int i = 1; i < 30; i++) {
         for (int j = 0; j < 10; j++) {
-            EXPECT_EQ(indexHandle_.InsertEntry(&i, { i, i }), RC::SUCCESSS);
+            EXPECT_EQ(indexHandle_.InsertEntry(&i, { i, i }), RC::SUCCESS);
         }
     }
     IX_IndexScan scan;
     int target = 15;
-    EXPECT_EQ(RC::SUCCESSS, scan.OpenScan(indexHandle_, CompOp::EQ, &target));
+    EXPECT_EQ(RC::SUCCESS, scan.OpenScan(indexHandle_, CompOp::EQ, &target));
     RID rid;
     int cnt = 0;
-    while (scan.GetNextEntry(rid) == RC::SUCCESSS) {
+    while (scan.GetNextEntry(rid) == RC::SUCCESS) {
         EXTRACT_PAGE_NUM(pageNum, rid);
         EXPECT_EQ(target, pageNum);
         cnt++;
     }
     EXPECT_EQ(cnt, 10);
-    EXPECT_EQ(RC::SUCCESSS, scan.CloseScan());
+    EXPECT_EQ(RC::SUCCESS, scan.CloseScan());
 }
 
 TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_NE_TEST)
@@ -351,10 +351,10 @@ TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_NE_TEST)
     constructDefaultIndex(ENTRY_SIZE_);
     IX_IndexScan scan;
     int target = ENTRY_SIZE_ / 2;
-    EXPECT_EQ(RC::SUCCESSS, scan.OpenScan(indexHandle_, CompOp::NE, &target));
+    EXPECT_EQ(RC::SUCCESS, scan.OpenScan(indexHandle_, CompOp::NE, &target));
     RID rid;
     int cnt = 0;
-    while (scan.GetNextEntry(rid) == RC::SUCCESSS) {
+    while (scan.GetNextEntry(rid) == RC::SUCCESS) {
         while (cnt == target)
             cnt++;
         EXTRACT_PAGE_NUM(pageNum, rid);
@@ -362,7 +362,7 @@ TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_NE_TEST)
         cnt++;
     }
     EXPECT_EQ(cnt, ENTRY_SIZE_);
-    EXPECT_EQ(RC::SUCCESSS, scan.CloseScan());
+    EXPECT_EQ(RC::SUCCESS, scan.CloseScan());
 }
 
 TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_GE_TEST)
@@ -370,16 +370,16 @@ TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_GE_TEST)
     constructDefaultIndex(ENTRY_SIZE_);
     IX_IndexScan scan;
     int target = ENTRY_SIZE_ / 2;
-    EXPECT_EQ(RC::SUCCESSS, scan.OpenScan(indexHandle_, CompOp::GE, &target));
+    EXPECT_EQ(RC::SUCCESS, scan.OpenScan(indexHandle_, CompOp::GE, &target));
     RID rid;
     int cnt = 0;
-    while (scan.GetNextEntry(rid) == RC::SUCCESSS) {
+    while (scan.GetNextEntry(rid) == RC::SUCCESS) {
         EXTRACT_PAGE_NUM(pageNum, rid);
         EXPECT_GE(pageNum, target);
         cnt++;
     }
     EXPECT_EQ(cnt, ENTRY_SIZE_ - target);
-    EXPECT_EQ(RC::SUCCESSS, scan.CloseScan());
+    EXPECT_EQ(RC::SUCCESS, scan.CloseScan());
 }
 
 TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_GT_TEST)
@@ -387,16 +387,16 @@ TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_GT_TEST)
     constructDefaultIndex(ENTRY_SIZE_);
     IX_IndexScan scan;
     int target = ENTRY_SIZE_ / 2;
-    EXPECT_EQ(RC::SUCCESSS, scan.OpenScan(indexHandle_, CompOp::GT, &target));
+    EXPECT_EQ(RC::SUCCESS, scan.OpenScan(indexHandle_, CompOp::GT, &target));
     RID rid;
     int cnt = 0;
-    while (scan.GetNextEntry(rid) == RC::SUCCESSS) {
+    while (scan.GetNextEntry(rid) == RC::SUCCESS) {
         EXTRACT_PAGE_NUM(pageNum, rid);
         EXPECT_GT(pageNum, target);
         cnt++;
     }
     EXPECT_EQ(cnt, ENTRY_SIZE_ - target - 1);
-    EXPECT_EQ(RC::SUCCESSS, scan.CloseScan());
+    EXPECT_EQ(RC::SUCCESS, scan.CloseScan());
 }
 
 TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_LE_TEST)
@@ -404,16 +404,16 @@ TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_LE_TEST)
     constructDefaultIndex(ENTRY_SIZE_);
     IX_IndexScan scan;
     int target = ENTRY_SIZE_ / 2;
-    EXPECT_EQ(RC::SUCCESSS, scan.OpenScan(indexHandle_, CompOp::LE, &target));
+    EXPECT_EQ(RC::SUCCESS, scan.OpenScan(indexHandle_, CompOp::LE, &target));
     RID rid;
     int cnt = 0;
-    while (scan.GetNextEntry(rid) == RC::SUCCESSS) {
+    while (scan.GetNextEntry(rid) == RC::SUCCESS) {
         EXTRACT_PAGE_NUM(pageNum, rid);
         EXPECT_LE(pageNum, target);
         cnt++;
     }
     EXPECT_EQ(cnt, target + 1);
-    EXPECT_EQ(RC::SUCCESSS, scan.CloseScan());
+    EXPECT_EQ(RC::SUCCESS, scan.CloseScan());
 }
 
 TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_LT_TEST)
@@ -421,30 +421,30 @@ TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_LT_TEST)
     constructDefaultIndex(ENTRY_SIZE_);
     IX_IndexScan scan;
     int target = ENTRY_SIZE_ / 2;
-    EXPECT_EQ(RC::SUCCESSS, scan.OpenScan(indexHandle_, CompOp::LT, &target));
+    EXPECT_EQ(RC::SUCCESS, scan.OpenScan(indexHandle_, CompOp::LT, &target));
     RID rid;
     int cnt = 0;
-    while (scan.GetNextEntry(rid) == RC::SUCCESSS) {
+    while (scan.GetNextEntry(rid) == RC::SUCCESS) {
         EXTRACT_PAGE_NUM(pageNum, rid);
         EXPECT_LE(pageNum, target);
         cnt++;
     }
     EXPECT_EQ(cnt, target);
-    EXPECT_EQ(RC::SUCCESSS, scan.CloseScan());
+    EXPECT_EQ(RC::SUCCESS, scan.CloseScan());
 }
 
 TEST_F(IX_IndexScanTest, IX_INDEX_SCAN_NO_TEST)
 {
     constructDefaultIndex(ENTRY_SIZE_);
     IX_IndexScan scan;
-    EXPECT_EQ(RC::SUCCESSS, scan.OpenScan(indexHandle_, CompOp::NO, nullptr));
+    EXPECT_EQ(RC::SUCCESS, scan.OpenScan(indexHandle_, CompOp::NO, nullptr));
     RID rid;
     int cnt = 0;
-    while (scan.GetNextEntry(rid) == RC::SUCCESSS) {
+    while (scan.GetNextEntry(rid) == RC::SUCCESS) {
         EXTRACT_PAGE_NUM(pageNum, rid);
         EXPECT_EQ(cnt, pageNum);
         cnt++;
     }
     EXPECT_EQ(cnt, ENTRY_SIZE_);
-    EXPECT_EQ(RC::SUCCESSS, scan.CloseScan());
+    EXPECT_EQ(RC::SUCCESS, scan.CloseScan());
 }

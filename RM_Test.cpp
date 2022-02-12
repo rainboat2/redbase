@@ -145,13 +145,13 @@ protected:
 TEST_F(RM_ManagerTest, RM_MANAGER_TEST)
 {
     RM_Manager manager(pf_manager_);
-    EXPECT_EQ(RC::SUCCESSS, manager.CreateFile(TEST_FILE_, record_size_));
+    EXPECT_EQ(RC::SUCCESS, manager.CreateFile(TEST_FILE_, record_size_));
     EXPECT_EQ(0, access(TEST_FILE_, F_OK));
     RM_FileHandle fileHandle;
-    EXPECT_EQ(RC::SUCCESSS, manager.OpenFile(TEST_FILE_, fileHandle));
+    EXPECT_EQ(RC::SUCCESS, manager.OpenFile(TEST_FILE_, fileHandle));
 
-    EXPECT_EQ(RC::SUCCESSS, manager.CloseFile(fileHandle));
-    EXPECT_EQ(RC::SUCCESSS, manager.DestroyFile(TEST_FILE_));
+    EXPECT_EQ(RC::SUCCESS, manager.CloseFile(fileHandle));
+    EXPECT_EQ(RC::SUCCESS, manager.DestroyFile(TEST_FILE_));
     EXPECT_NE(0, access(TEST_FILE_, F_OK));
 }
 
@@ -189,14 +189,14 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_INSERT_AND_UPDATE_TEST)
     // insert
     for (int i = 0; i < TEST_RECORD_NUM_; i++) {
         memset(data_, i, record_size_);
-        EXPECT_EQ(RC::SUCCESSS, fileHandle_.InsertRec(data_, rids[i]));
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.InsertRec(data_, rids[i]));
     }
 
     // check data
     for (int i = 0; i < TEST_RECORD_NUM_; i++) {
         memset(data_, i, record_size_);
         RM_Record rec;
-        EXPECT_EQ(RC::SUCCESSS, fileHandle_.GetRec(rids[i], rec));
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.GetRec(rids[i], rec));
         char* data;
         rec.GetData(data);
         EXPECT_EQ(0, memcmp(data, data_, record_size_));
@@ -206,17 +206,17 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_INSERT_AND_UPDATE_TEST)
     for (int i = 0; i < TEST_RECORD_NUM_; i++) {
         memset(data_, i + 1, record_size_);
         RM_Record rec;
-        EXPECT_EQ(RC::SUCCESSS, fileHandle_.GetRec(rids[i], rec));
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.GetRec(rids[i], rec));
         char* data;
         rec.GetData(data);
         memcpy(data, data_, record_size_);
-        EXPECT_EQ(RC::SUCCESSS, fileHandle_.UpdateRec(rec));
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.UpdateRec(rec));
     }
 
     for (int i = 0; i < TEST_RECORD_NUM_; i++) {
         memset(data_, i + 1, record_size_);
         RM_Record rec;
-        EXPECT_EQ(RC::SUCCESSS, fileHandle_.GetRec(rids[i], rec));
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.GetRec(rids[i], rec));
         char* data;
         rec.GetData(data);
         EXPECT_EQ(0, memcmp(data, data_, record_size_));
@@ -229,7 +229,7 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_DELETE_TEST)
     // insert
     for (int i = 0; i < rids.size(); i++) {
         memset(data_, i, record_size_);
-        EXPECT_EQ(RC::SUCCESSS, fileHandle_.InsertRec(data_, rids[i]));
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.InsertRec(data_, rids[i]));
     }
 
     std::vector<bool> marked(rids.size());
@@ -244,7 +244,7 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_DELETE_TEST)
     }
 
     for (int i = deleted.size() - 1; i >= 0; i--) {
-        EXPECT_EQ(RC::SUCCESSS, fileHandle_.DeleteRec(deleted[i]));
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.DeleteRec(deleted[i]));
     }
 
     for (int i = 0; i < deleted.size(); i++) {
@@ -259,13 +259,13 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_GET_NEXT_TEST)
     std::array<RID, 400> rids;
     for (int i = 0; i < rids.size(); i++) {
         memset(data_, i, record_size_);
-        EXPECT_EQ(RC::SUCCESSS, fileHandle_.InsertRec(data_, rids[i]));
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.InsertRec(data_, rids[i]));
     }
 
     std::unordered_set<int> deleted { 0, 3, 40, 253, 254, 255, 256, 399 };
 
     for (int i : deleted) {
-        EXPECT_EQ(RC::SUCCESSS, fileHandle_.DeleteRec(rids[i]));
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.DeleteRec(rids[i]));
         RM_Record rec;
         EXPECT_EQ(RC::RM_EMPTY_SLOT, fileHandle_.GetRec(rids[i], rec));
     }
@@ -275,7 +275,7 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_GET_NEXT_TEST)
         if (deleted.find(i) != deleted.end())
             continue;
         RM_Record rec;
-        EXPECT_EQ(fileHandle_.GetNextRec(cur, rec), RC::SUCCESSS);
+        EXPECT_EQ(fileHandle_.GetNextRec(cur, rec), RC::SUCCESS);
         RID rid;
         rec.GetRid(rid);
         EXPECT_EQ(rids[i], rid);
@@ -328,7 +328,7 @@ TEST_F(RM_FileScanTest, GET_NEXT_REC_TEST)
     *val = 250;
     scan.OpenScan(fileHandle_, type_, attrLength_, attrOffset_, CompOp::EQ, val);
     RM_Record rec;
-    EXPECT_EQ(scan.GetNextRec(rec), RC::SUCCESSS);
+    EXPECT_EQ(scan.GetNextRec(rec), RC::SUCCESS);
     char* data;
     rec.GetData(data);
     EXPECT_EQ(*((int*)(data + attrOffset_)), 250);

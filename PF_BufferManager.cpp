@@ -48,7 +48,7 @@ RC PF_BufferManager::ReadPage(int fd, PageNum pageNum, char*& data)
     auto desc = fileAllocated_[key];
     data = buffer_pool_[desc->bufferIndex];
     pinPage(key);
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_BufferManager::MarkDirty(int fd, PageNum pageNum)
@@ -57,7 +57,7 @@ RC PF_BufferManager::MarkDirty(int fd, PageNum pageNum)
     RETURN_ERROR_IF_NOT_PIN(key);
     auto desc = fileAllocated_[key];
     desc->isDirty = true;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_BufferManager::ForcePage(int fd, PageNum pageNum)
@@ -70,7 +70,7 @@ RC PF_BufferManager::ForcePage(int fd, PageNum pageNum)
         WritePageToFile(fd, pageNum, data);
         desc->isDirty = false;
     }
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_BufferManager::UnpinPage(int fd, PageNum pageNum)
@@ -82,7 +82,7 @@ RC PF_BufferManager::UnpinPage(int fd, PageNum pageNum)
     if (desc->pinCount == 0) {
         unpinDispatcher_->push(key);
     }
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_BufferManager::AllocateBlock(char*& data)
@@ -92,7 +92,7 @@ RC PF_BufferManager::AllocateBlock(char*& data)
         return RC::PF_NOBUF;
     data = buffer_pool_[bufferIndex];
     scratchAllocated_[data] = bufferIndex;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_BufferManager::DisposeBlock(char*& data)
@@ -102,7 +102,7 @@ RC PF_BufferManager::DisposeBlock(char*& data)
     int bufferIndex = scratchAllocated_[data];
     scratchAllocated_.erase(data);
     freeBuffers_.push_back(bufferIndex);
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 void PF_BufferManager::pinPage(BufferKey& key)
@@ -139,7 +139,7 @@ RC PF_BufferManager::ReadPageFromFile(int fd, PageNum pageNum, char*& data)
     PF_UNIX_RETURN_IF_ERROR(num);
     if (num < PF_FILE_BLOCK_SIZE)
         return RC::PF_INCOMPLETEREAD;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC PF_BufferManager::WritePageToFile(int fd, PageNum pageNum, char* data)
@@ -150,5 +150,5 @@ RC PF_BufferManager::WritePageToFile(int fd, PageNum pageNum, char* data)
     PF_UNIX_RETURN_IF_ERROR(num);
     if (num < PF_FILE_BLOCK_SIZE)
         return RC::PF_INCOMPLETEWRITE;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }

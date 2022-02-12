@@ -1,12 +1,13 @@
 #ifndef SM_HH
 #define SM_HH
 
+#include "SM_Internal.h"
 #include "ix.h"
 #include "pf.h"
 #include "redbase.h"
 #include "rm.h"
 
-#include "SM_Internal.h"
+#include <vector>
 
 class SM_Manager {
 public:
@@ -26,6 +27,11 @@ public:
     RC Help(const char* relName);
     RC Print(const char* relName);
     RC Set(const char* paramName, const char* value);
+
+private:
+    RC getRecord(const char* relName, RM_Record& relRec);
+    RC getRecord(const char* relName, const char* attrName, RM_Record& attrRec);
+    RC getAllAttrRecords(const char* relName, std::vector<RM_Record>& attrs);
 
 private:
     IX_Manager& ixm_;

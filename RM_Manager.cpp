@@ -31,7 +31,7 @@ RC RM_Manager::CreateFile(const char* fileName, int recordSize)
     pfh.MarkDirty(0);
     pfh.UnpinPage(0);
     RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CloseFile(pfh));
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC RM_Manager::DestroyFile(const char* fileName)
@@ -56,7 +56,7 @@ RC RM_Manager::OpenFile(const char* fileName, RM_FileHandle& fileHandle)
     PageNum pageNum;
     page.GetPageNum(pageNum);
     RETURN_RC_IF_NOT_SUCCESS(fileHandle.pf_fileHandle_.UnpinPage(pageNum));
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC RM_Manager::CloseFile(RM_FileHandle& fileHandle)
@@ -65,7 +65,7 @@ RC RM_Manager::CloseFile(RM_FileHandle& fileHandle)
     fileHandle.ForceHeader();
     RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CloseFile(fileHandle.pf_fileHandle_));
     fileHandle.isOpen_ = false;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 // x := recordNums

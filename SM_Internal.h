@@ -29,6 +29,7 @@ struct Relcat {
     char relName[MAXNAME + 1];
     int tupleLength;
     int attrCount;
+    // record how many indexes have been created, it should not decrease when drop an index 
     int indexCount;
 };
 

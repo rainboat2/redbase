@@ -31,7 +31,7 @@ RC RM_FileScan::OpenScan(
     pinHint_ = pinHint;
     cur_ = RID { 1, -1 };
     isOpen_ = true;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC RM_FileScan::GetNextRec(RM_Record& rec)
@@ -46,7 +46,7 @@ RC RM_FileScan::GetNextRec(RM_Record& rec)
             break;
         }
     }
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC RM_FileScan::CloseScan()
@@ -54,7 +54,7 @@ RC RM_FileScan::CloseScan()
     if (!isOpen_)
         return RC::RM_FILE_SCAN_CLOSED;
     isOpen_ = false;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 bool RM_FileScan::isMatch(RM_Record& rec)

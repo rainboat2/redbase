@@ -37,7 +37,7 @@ RC IX_Manager::CreateIndex(
     RETURN_RC_IF_NOT_SUCCESS(fhd.UnpinPage(pageNum));
     RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CloseFile(fhd));
 
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC IX_Manager::OpenIndex(const char* fileName, int indexNo, IX_IndexHandle& handle)
@@ -66,7 +66,7 @@ RC IX_Manager::OpenIndex(const char* fileName, int indexNo, IX_IndexHandle& hand
     handle.root_ = IX_BNodeWapper(bfh.attrLength, bfh.attrType, rootData, { rootPageNum, 0 });
 
     handle.isOpen_ = true;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC IX_Manager::CloseIndex(IX_IndexHandle& handle)
@@ -80,14 +80,14 @@ RC IX_Manager::CloseIndex(IX_IndexHandle& handle)
     RETURN_RC_IF_NOT_SUCCESS(handle.pf_fileHandle_.UnpinPage(handle.root_.getPageNum()));
     RETURN_RC_IF_NOT_SUCCESS(pf_manager_.CloseFile(handle.pf_fileHandle_));
     handle.isOpen_ = false;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC IX_Manager::DestroyIndex(const char* filename, int indexNo)
 {
     auto name = getFileName(filename, indexNo);
     RETURN_RC_IF_NOT_SUCCESS(pf_manager_.DestroyFile(name.c_str()));
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 std::string IX_Manager::getFileName(const char* filename, int indexNo)

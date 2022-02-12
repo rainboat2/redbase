@@ -16,11 +16,11 @@ RID::RID(PageNum pageNum, SlotNum slotNum)
 RC RID::GetPageNum(PageNum& pageNum) const
 {
     pageNum = pageNum_;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC RID::GetSlotNum(SlotNum& slotNum) const
 {
     slotNum = slotNum_;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }

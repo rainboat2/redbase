@@ -13,7 +13,7 @@ IX_IndexHandle::~IX_IndexHandle()
 RC IX_IndexHandle::DeleteEntry(void* pData, const RID& rid)
 {
     DeleteEntry(root_, pData, rid, 0);
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 IX_BDeleteUpEntry IX_IndexHandle::DeleteEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level)
@@ -106,7 +106,7 @@ RC IX_IndexHandle::InsertEntry(void* pData, const RID& rid)
     IX_BInsertUpEntry up = InsertEntry(root_, pData, rid, 0);
     if (up.isSpilt)
         changeRoot(up);
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 IX_BInsertUpEntry IX_IndexHandle::InsertEntry(IX_BNodeWapper& cur, void* pData, const RID& rid, int level)
@@ -285,7 +285,7 @@ RC IX_IndexHandle::GetLeafEntryAddrEqualTo(void* pData, RID& rid) const
     SlotNum slot = leaf.indexOf(pData);
     rid = { leaf.getPageNum(), slot };
     unpin(leaf);
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC IX_IndexHandle::GetLeafEntryAddrGreatThen(void* pData, RID& rid) const
@@ -329,13 +329,13 @@ RC IX_IndexHandle::getLeafBy(void* pData, RID& rid, std::function<RID(void*, IX_
         if (i != fileHeader_.height - 1)
             cur = readBNodeFrom(nextAddr);
     }
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC IX_IndexHandle::ForcePages()
 {
     RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.ForcePages());
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 void IX_IndexHandle::changeRoot(IX_BInsertUpEntry& entry)
@@ -383,7 +383,7 @@ IX_BNodeWapper IX_IndexHandle::createBNode()
 {
     PF_PageHandle page;
     RC rc = pf_fileHandle_.AllocatePage(page);
-    assert(rc == RC::SUCCESSS);
+    assert(rc == RC::SUCCESS);
     IX_BNodeWapper::initNode(page, fileHeader_.attrType, fileHeader_.attrLength);
     PageNum pageNum;
     char* data;
@@ -399,7 +399,7 @@ IX_BBucketListWapper IX_IndexHandle::createBucketList()
 {
     PF_PageHandle page;
     RC rc = pf_fileHandle_.AllocatePage(page);
-    assert(rc == RC::SUCCESSS);
+    assert(rc == RC::SUCCESS);
     IX_BBucketListWapper::initBucketList(page, fileHeader_.bucketItemNum);
     char* data;
     page.GetData(data);
@@ -414,7 +414,7 @@ IX_BBucketListWapper IX_IndexHandle::createBucketList()
 RC IX_IndexHandle::forceHeader()
 {
     if (!isHeaderChange_)
-        return RC::SUCCESSS;
+        return RC::SUCCESS;
     PF_PageHandle page;
     RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.GetThisPage(0, page));
     char* data;
@@ -423,5 +423,5 @@ RC IX_IndexHandle::forceHeader()
     isHeaderChange_ = false;
     RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.MarkDirty(0));
     RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.UnpinPage(0));
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }

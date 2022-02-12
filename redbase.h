@@ -3,7 +3,7 @@
 
 #include <functional>
 
-#define MAX_STRING_LEN 2048
+#define MAX_STRING_LEN 255
 
 enum PageStatus : int {
     LIST_END = -1,
@@ -15,7 +15,7 @@ enum PageStatus : int {
 
 // definition of return code
 enum class RC {
-    SUCCESSS = 0,
+    SUCCESS = 0,
     PF_EOF = 1, // end of file
     PF_PAGEPINNED, // page pinned in buffer
     PF_PAGENOTINBUF, // page to be unpinned is not in buffer
@@ -54,6 +54,9 @@ enum class RC {
     IX_INDEX_SCAN_OPENED,
     IX_INDEX_SCAN_CLOSED,
     IX_INDEX_SCAN_EOF,
+
+    SM_ATTR_NOT_FOUND = 3000,
+    SM_INDEX_ARLEADY_EXIST,
 };
 
 void PrintError(RC rc);
@@ -83,14 +86,14 @@ enum class ClientHint {
 #define RETURN_RC_IF_NOT_SUCCESS(redbase_call_or_rc) \
     {                                                \
         RC rc__ = redbase_call_or_rc;                \
-        if (rc__ != RC::SUCCESSS)                    \
+        if (rc__ != RC::SUCCESS)                    \
             return rc__;                             \
     }
 
 #define EXIT_IF_NOT_SUCESSS(redbase_call_or_rc) \
     {                                           \
         RC rc__ = redbase_call_or_rc;           \
-        if (rc__ != RC::SUCCESSS) {             \
+        if (rc__ != RC::SUCCESS) {             \
             PrintError(rc__);                   \
             exit(-1);                           \
         }                                       \

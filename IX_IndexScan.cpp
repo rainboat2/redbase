@@ -24,7 +24,7 @@ RC IX_IndexScan::OpenScan(const IX_IndexHandle& indexHandle,
     isOpen_ = true;
     hasNextBucket_ = true;
     RETURN_RC_IF_NOT_SUCCESS(findFirstNode());
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC IX_IndexScan::CloseScan()
@@ -36,7 +36,7 @@ RC IX_IndexScan::CloseScan()
         RETURN_RC_IF_NOT_SUCCESS(indexHandle_->unpin(curNode_));
     isOpen_ = false;
     hasNextBucket_ = false;
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC IX_IndexScan::GetNextEntry(RID& rid)
@@ -55,7 +55,7 @@ RC IX_IndexScan::GetNextEntry(RID& rid)
         rid = curRid();
         moveToNextValidEntry();
     }
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 RC IX_IndexScan::findFirstNode()
@@ -85,7 +85,7 @@ RC IX_IndexScan::findFirstNode()
         if (indexHandle_->isBucketAddr(curRid()))
             bucketIt_ = indexHandle_->getBucketIterator(curRid());
     }
-    return RC::SUCCESSS;
+    return RC::SUCCESS;
 }
 
 void IX_IndexScan::moveToNextValidEntry()

@@ -32,10 +32,13 @@ private:
     RC getRecord(const char* relName, RM_Record& relRec);
     RC getRecord(const char* relName, const char* attrName, RM_Record& attrRec);
     RC getAllAttrRecords(const char* relName, std::vector<RM_Record>& attrs);
+    RC buildIndex(Attrcat& attr);
 
 private:
     IX_Manager& ixm_;
     RM_Manager& rmm_;
+
+    bool isOpen;
     RM_FileHandle relTable_;
     RM_FileHandle attrTable_;
 };

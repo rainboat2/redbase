@@ -57,6 +57,9 @@ enum class RC {
 
     SM_ATTR_NOT_FOUND = 3000,
     SM_INDEX_ARLEADY_EXIST,
+    SM_DB_OPENED,
+    SM_DB_CLOSED,
+    SM_UNIX,
 };
 
 void PrintError(RC rc);
@@ -86,17 +89,18 @@ enum class ClientHint {
 #define RETURN_RC_IF_NOT_SUCCESS(redbase_call_or_rc) \
     {                                                \
         RC rc__ = redbase_call_or_rc;                \
-        if (rc__ != RC::SUCCESS)                    \
+        if (rc__ != RC::SUCCESS)                     \
             return rc__;                             \
     }
 
-#define EXIT_IF_NOT_SUCESSS(redbase_call_or_rc) \
-    {                                           \
-        RC rc__ = redbase_call_or_rc;           \
-        if (rc__ != RC::SUCCESS) {             \
-            PrintError(rc__);                   \
-            exit(-1);                           \
-        }                                       \
+#define EXIT_IF_NOT_SUCESSS(redbase_call_or_rc)                    \
+    {                                                              \
+        RC rc__ = redbase_call_or_rc;                              \
+        if (rc__ != RC::SUCCESS) {                                 \
+            PrintError(rc__);                                      \
+            std::cout << __FILE__ << ":" << __LINE__ << std::endl; \
+            exit(-1);                                              \
+        }                                                          \
     }
 
 #endif

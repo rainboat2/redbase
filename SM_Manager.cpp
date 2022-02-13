@@ -1,23 +1,45 @@
 #include "sm.h"
 
 #include <string.h>
+#include <unistd.h>
 
 SM_Manager::SM_Manager(IX_Manager& ixm, RM_Manager& rmm)
     : ixm_(ixm)
     , rmm_(rmm)
+    , isOpen(false)
 {
-    rmm_.OpenFile(RELATION_TABLE_NAME, relTable_);
-    rmm_.OpenFile(ATTRIBUTE_TABLE_NAME, attrTable_);
 }
 
 SM_Manager::~SM_Manager()
 {
-    rmm_.CloseFile(relTable_);
-    rmm_.CloseFile(attrTable_);
+    assert(!isOpen);
+}
+
+RC SM_Manager::OpenDb(const char* dbName){
+    if (isOpen)
+        return RC::SM_DB_OPENED;
+    if (chdir(dbName))
+        return RC::SM_UNIX;
+    
+    RETURN_RC_IF_NOT_SUCCESS(rmm_.OpenFile(RELATION_TABLE_NAME, relTable_));
+    RETURN_RC_IF_NOT_SUCCESS(rmm_.OpenFile(ATTRIBUTE_TABLE_NAME, attrTable_));
+    isOpen = true;
+    return RC::SUCCESS;
+}
+
+RC SM_Manager::CloseDb(){
+    if (!isOpen)
+        return RC::SM_DB_CLOSED;
+    RETURN_RC_IF_NOT_SUCCESS(rmm_.CloseFile(relTable_));
+    RETURN_RC_IF_NOT_SUCCESS(rmm_.CloseFile(attrTable_));
+    isOpen = false;
+    return RC::SUCCESS;
 }
 
 RC SM_Manager::CreateTable(const char* relName, int attrCount, AttrInfo* attributes)
 {
+    if (!isOpen)
+        return RC::SM_DB_CLOSED;
     Relcat rel;
     for (int i = 0; i < attrCount; i++)
         rel.tupleLength += attributes[i].attrLength;
@@ -40,16 +62,20 @@ RC SM_Manager::CreateTable(const char* relName, int attrCount, AttrInfo* attribu
     }
 
     // create table file
-    int recordSize = 0;
-    for (int i = 0; i < attrCount; i++) {
-        recordSize += attributes[i].attrLength;
+    if (strcmp(relName, RELATION_TABLE_NAME) != 0 && strcmp(relName, ATTRIBUTE_TABLE_NAME) != 0) {
+        int recordSize = 0;
+        for (int i = 0; i < attrCount; i++) {
+            recordSize += attributes[i].attrLength;
+        }
+        RETURN_RC_IF_NOT_SUCCESS(rmm_.CreateFile(relName, recordSize));
     }
-    RETURN_RC_IF_NOT_SUCCESS(rmm_.CreateFile(relName, recordSize));
     return RC::SUCCESS;
 }
 
 RC SM_Manager::DropTable(const char* relName)
 {
+    if (!isOpen)
+        return RC::SM_DB_CLOSED;
     // read relation record
     RM_Record relRec;
     RETURN_RC_IF_NOT_SUCCESS(getRecord(relName, relRec));
@@ -88,6 +114,9 @@ RC SM_Manager::DropTable(const char* relName)
 
 RC SM_Manager::CreateIndex(const char* relName, const char* attrName)
 {
+    if (!isOpen)
+        return RC::SM_DB_CLOSED;
+
     char* buf;
 
     // read relation record
@@ -116,12 +145,15 @@ RC SM_Manager::CreateIndex(const char* relName, const char* attrName)
             attr->attrLength));
     RETURN_RC_IF_NOT_SUCCESS(relTable_.UpdateRec(relRec));
     RETURN_RC_IF_NOT_SUCCESS(attrTable_.UpdateRec(attrRec));
+    buildIndex(*attr);
 
     return RC::SUCCESS;
 }
 
 RC SM_Manager::DropIndex(const char* relName, const char* attrName)
 {
+    if (!isOpen)
+        return RC::SM_DB_CLOSED;
     char* buf;
     // read relation record
     RM_Record relRec;
@@ -199,6 +231,7 @@ RC SM_Manager::getAllAttrRecords(const char* relName, std::vector<RM_Record>& at
         0,
         CompOp::EQ,
         const_cast<char*>(relName));
+    RETURN_RC_IF_NOT_SUCCESS(rc);
 
     RM_Record attrRec;
     while ((rc = scan.GetNextRec(attrRec)) == RC::SUCCESS) {
@@ -212,6 +245,41 @@ RC SM_Manager::getAllAttrRecords(const char* relName, std::vector<RM_Record>& at
         return rc;
     if (attrs.size() == 0)
         return RC::SM_ATTR_NOT_FOUND;
+
+    return RC::SUCCESS;
+}
+
+RC SM_Manager::buildIndex(Attrcat& attr)
+{
+    assert(attr.indexNo > 0);
+    RM_FileHandle table;
+    rmm_.OpenFile(attr.relName, table);
+    RM_FileScan scan;
+    RC rc = scan.OpenScan(table,
+        attr.attrType,
+        attr.attrLength,
+        attr.offset,
+        CompOp::NO,
+        nullptr);
+    RETURN_RC_IF_NOT_SUCCESS(rc);
+
+    IX_IndexHandle index;
+    RETURN_RC_IF_NOT_SUCCESS(ixm_.OpenIndex(attr.attrName, attr.indexNo, index));
+
+    RM_Record rec;
+    while ((rc = scan.GetNextRec(rec)) == RC::SUCCESS) {
+        char* buf = nullptr;
+        rec.GetData(buf);
+        RID rid;
+        rec.GetRid(rid);
+        RETURN_RC_IF_NOT_SUCCESS(index.InsertEntry(buf + attr.offset, rid));
+    }
+
+    RETURN_RC_IF_NOT_SUCCESS(ixm_.CloseIndex(index));
+    RETURN_RC_IF_NOT_SUCCESS(scan.CloseScan());
+    RETURN_RC_IF_NOT_SUCCESS(rmm_.CloseFile(table));
+    if (rc != RC::SUCCESS && rc != RC::RM_FILE_EOF)
+        return rc;
 
     return RC::SUCCESS;
 }

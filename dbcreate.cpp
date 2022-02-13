@@ -33,11 +33,12 @@ int main(int argc, char* argv[])
     RM_Manager rm_manager(pf_manager);
     IX_Manager ix_manager(pf_manager);
 
-    RM_FileHandle rel, attr;
     EXIT_IF_NOT_SUCESSS(rm_manager.CreateFile(RELATION_TABLE_NAME, sizeof(Relcat)));
     EXIT_IF_NOT_SUCESSS(rm_manager.CreateFile(ATTRIBUTE_TABLE_NAME, sizeof(Attrcat)));
 
     SM_Manager sm_manager(ix_manager, rm_manager);
+    EXIT_IF_NOT_SUCESSS(sm_manager.OpenDb(dbname));
+
     AttrInfo relcatAttrs[] = {
         AttrInfo { "relName", AttrType::RD_STRING, MAXNAME + 1 },
         AttrInfo { "tupleLength", AttrType::RD_INT, sizeof(int) },
@@ -56,5 +57,6 @@ int main(int argc, char* argv[])
     };
     EXIT_IF_NOT_SUCESSS(sm_manager.CreateTable(ATTRIBUTE_TABLE_NAME, sizeof(attrcatAttrs) / sizeof(AttrInfo), attrcatAttrs));
 
+    EXIT_IF_NOT_SUCESSS(sm_manager.CloseDb());
     return 0;
 }

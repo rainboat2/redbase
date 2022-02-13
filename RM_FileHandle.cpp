@@ -20,12 +20,6 @@
 #define SLOT_OFFSET(slotNum) \
     (RM_PageHeader::size(fileHeader_.recordNumsOfEachPage) + slotNum * fileHeader_.recordSize)
 
-#define DECLARE_PAGE_SLOT_NUM_FROM_RID(rid) \
-    PageNum pageNum;                        \
-    SlotNum slotNum;                        \
-    rid.GetPageNum(pageNum);                \
-    rid.GetSlotNum(slotNum);
-
 RM_FileHandle::RM_FileHandle()
     : isOpen_(false)
 {
@@ -47,7 +41,7 @@ RC RM_FileHandle::GetRec(const RID& rid, RM_Record& rec) const
         return RC::RM_FILE_CLOSED;
     RETURN_IF_INVALID_RID(rid);
 
-    DECLARE_PAGE_SLOT_NUM_FROM_RID(rid);
+    EXTRACT_PAGE_SLOT_NUM(pageNum, slotNum, rid);
 
     PF_PageHandle page;
     RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.GetThisPage(pageNum, page));
@@ -70,7 +64,7 @@ RC RM_FileHandle::GetRec(const RID& rid, RM_Record& rec) const
 
 RC RM_FileHandle::GetNextRec(const RID& rid, RM_Record& rec) const
 {
-    DECLARE_PAGE_SLOT_NUM_FROM_RID(rid);
+    EXTRACT_PAGE_SLOT_NUM(pageNum, slotNum, rid);
 
     bool find = false;
     while (!find && pageNum < fileHeader_.pageNums) {
@@ -105,7 +99,7 @@ RC RM_FileHandle::InsertRec(const char* pData, RID& rid)
 
 RC RM_FileHandle::DeleteRec(const RID& rid)
 {
-    DECLARE_PAGE_SLOT_NUM_FROM_RID(rid);
+    EXTRACT_PAGE_SLOT_NUM(pageNum, slotNum, rid);
 
     // getPageData
     PF_PageHandle page;

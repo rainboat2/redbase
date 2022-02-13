@@ -80,6 +80,7 @@ RC PF_BufferManager::UnpinPage(int fd, PageNum pageNum)
     auto desc = fileAllocated_[key];
     desc->pinCount--;
     if (desc->pinCount == 0) {
+        ForcePage(fd, pageNum);
         unpinDispatcher_->push(key);
     }
     return RC::SUCCESS;
@@ -125,7 +126,6 @@ int PF_BufferManager::getFreeBuffer()
         // based on buffer strategy, swap out the page
         const auto key = unpinDispatcher_->pop();
         const auto desc = fileAllocated_[key];
-        ForcePage(desc->fd, desc->pageNum);
         rs = desc->bufferIndex;
         fileAllocated_.erase(key);
     }

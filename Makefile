@@ -22,7 +22,7 @@ RM_SOURCES   = RM_RID.cpp RM_Manager.cpp RM_Record.cpp RM_FileHandle.cpp RM_File
 IX_SOURCES   = IX_Manager.cpp IX_IndexHandle.cpp IX_BNodeWapper.cpp IX_IndexScan.cpp \
                IX_BBucketListWapper.cpp IX_BBucketWapper.cpp IX_BBucketIterator.cpp
 SM_SOURCES   = SM_Manager.cpp
-TEST_SOURCES = PF_Test.cpp RM_Test.cpp IX_Test.cpp
+TEST_SOURCES = PF_Test.cpp RM_Test.cpp IX_Test.cpp SM_Test.cpp
 SOURCES      = $(TOOL_SOURCES) $(PF_SOURCES) $(RM_SOURCES) $(TEST_SOURCES) $(IX_SOURCES) $(SM_SOURCES)
 
 # objects
@@ -92,7 +92,7 @@ clean:
 	rm -rf $(DIRS)
 print:
 	echo $(OBJECTS)
-run_test: $(TARGET_DIR)/redbaseTest
+run_test: $(TARGET_DIR)/redbaseTest $(TARGETS)
 	$(TARGET_DIR)/redbaseTest $(cmd_args)
 make_dirs:
 	mkdir -p $(DIRS)

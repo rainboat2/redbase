@@ -225,7 +225,7 @@ RC SM_Manager::getRecord(const char* relName, const char* attrName, RM_Record& a
 RC SM_Manager::getAllAttrRecords(const char* relName, std::vector<RM_Record>& attrs)
 {
     RM_FileScan scan;
-    RC rc = scan.OpenScan(relTable_,
+    RC rc = scan.OpenScan(attrTable_,
         AttrType::RD_STRING,
         MAXNAME,
         0,

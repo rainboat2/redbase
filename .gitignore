@@ -1,7 +1,2 @@
 .vscode
-redbase.dSYM
-redbase
-tester
-bin/*
-build/*
-lib/*
+build

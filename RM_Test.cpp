@@ -305,7 +305,7 @@ protected:
     const int record_size_ = 17;
     AttrType type_ = AttrType::RD_INT;
     int attrLength_ = sizeof(int);
-    int attrOffset_ = sizeof(float);
+    int attrOffset_ = record_size_ / 2;
     PF_Manager* pf_manager_;
     RM_Manager* rm_manager_;
     RM_FileHandle fileHandle_;
@@ -332,5 +332,30 @@ TEST_F(RM_FileScanTest, GET_NEXT_REC_TEST)
     char* data;
     rec.GetData(data);
     EXPECT_EQ(*((int*)(data + attrOffset_)), 250);
+    EXPECT_EQ(RC::RM_FILE_EOF, scan.GetNextRec(rec));
+}
+
+TEST_F(RM_FileScanTest, GET_ALL_REC_TEST)
+{
+    char buf[17];
+    const int TEST_RECORD_NUM = 500;
+    for (int i = 0; i < TEST_RECORD_NUM; i++) {
+        int* val = (int*)(buf + attrOffset_);
+        *val = i;
+        RID rid;
+        fileHandle_.InsertRec(buf, rid);
+    }
+
+    RM_FileScan scan;
+    scan.OpenScan(fileHandle_, type_, attrLength_, attrOffset_, CompOp::NO, nullptr);
+    RM_Record rec;
+    int cnt = 0;
+    while (scan.GetNextRec(rec) == RC::SUCCESS) {
+        char* data;
+        rec.GetData(data);
+        EXPECT_EQ(*((int*)(data + attrOffset_)), cnt);
+        cnt++;
+    }
+    EXPECT_EQ(cnt, TEST_RECORD_NUM);
     EXPECT_EQ(RC::RM_FILE_EOF, scan.GetNextRec(rec));
 }

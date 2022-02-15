@@ -246,7 +246,7 @@ RC RM_FileHandle::ForceHeader()
     RETURN_RC_IF_NOT_SUCCESS(pf_fileHandle_.GetFirstPage(page));
     char* data;
     page.GetData(data);
-    memcpy(&fileHeader_, data, sizeof(RM_FileHeader));
+    memcpy(data, &fileHeader_, sizeof(RM_FileHeader));
     isHeaderChange_ = false;
 
     PageNum pageNum;

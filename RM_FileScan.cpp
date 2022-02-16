@@ -20,7 +20,7 @@ RC RM_FileScan::OpenScan(
         return RC::RM_FILE_SCAN_OPENED;
     assert((attrType == AttrType::RD_INT && attrLength == sizeof(int))
         || (attrType == AttrType::RD_FLOAT && attrLength == sizeof(float))
-        || (attrType == AttrType::RD_STRING && attrLength > 0 && attrLength_ < MAX_STRING_LEN));
+        || (attrType == AttrType::RD_STRING && attrLength > 0 && attrLength < MAX_STRING_LEN));
 
     fileHandle_ = const_cast<RM_FileHandle*>(&fileHandle);
     attrType_ = attrType;

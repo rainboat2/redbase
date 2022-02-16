@@ -80,3 +80,26 @@ TEST_F(SM_ManagerTest, SM_CREATE_DROP_TABLE_TEST)
     EXPECT_EQ(sm_manager_->CloseDb(), RC::SUCCESS);
     destoryDB();
 }
+
+TEST_F(SM_ManagerTest, SM_CREATE_DROP_INDEX_TEST)
+{
+    createDB();
+    EXPECT_EQ(sm_manager_->OpenDb(TEST_DB_DIR_), RC::SUCCESS);
+    const char* relName = "testRel";
+    AttrInfo info[3] {
+        { "intTest", AttrType::RD_INT, sizeof(int) },
+        { "flotTest", AttrType::RD_FLOAT, sizeof(float) },
+        { "strTest", AttrType::RD_STRING, MAXNAME + 1 }
+    };
+    EXPECT_EQ(sm_manager_->CreateTable(relName, 3, info), RC::SUCCESS);
+    EXPECT_EQ(access(relName, F_OK), 0);
+    EXPECT_EQ(sm_manager_->CreateIndex(relName, info[0].attrName), RC::SUCCESS);
+
+    EXPECT_EQ(sm_manager_->DropIndex(relName, info[0].attrName), RC::SUCCESS);
+
+    EXPECT_EQ(sm_manager_->DropTable(relName), RC::SUCCESS);
+    EXPECT_NE(access(relName, F_OK), 0);
+
+    EXPECT_EQ(sm_manager_->CloseDb(), RC::SUCCESS);
+    destoryDB();
+}

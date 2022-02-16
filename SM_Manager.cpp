@@ -167,7 +167,7 @@ RC SM_Manager::DropIndex(const char* relName, const char* attrName)
     attrRec.GetData(buf);
     Attrcat* attr = (Attrcat*)buf;
 
-    if (attr->indexNo == 1)
+    if (attr->indexNo == -1)
         return RC::SUCCESS;
 
     RETURN_RC_IF_NOT_SUCCESS(ixm_.DestroyIndex(rel->relName, attr->indexNo));
@@ -195,7 +195,7 @@ RC SM_Manager::getRecord(const char* relName, RM_Record& relRec)
 RC SM_Manager::getRecord(const char* relName, const char* attrName, RM_Record& attrRec)
 {
     RM_FileScan scan;
-    RC rc = scan.OpenScan(relTable_,
+    RC rc = scan.OpenScan(attrTable_,
         AttrType::RD_STRING,
         MAXNAME,
         0,
@@ -264,7 +264,7 @@ RC SM_Manager::buildIndex(Attrcat& attr)
     RETURN_RC_IF_NOT_SUCCESS(rc);
 
     IX_IndexHandle index;
-    RETURN_RC_IF_NOT_SUCCESS(ixm_.OpenIndex(attr.attrName, attr.indexNo, index));
+    RETURN_RC_IF_NOT_SUCCESS(ixm_.OpenIndex(attr.relName, attr.indexNo, index));
 
     RM_Record rec;
     while ((rc = scan.GetNextRec(rec)) == RC::SUCCESS) {

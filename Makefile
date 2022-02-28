@@ -4,6 +4,8 @@ LDFLAGS  = -L $(LIB_DIR)
 LIBS     = -ltool -lpf -lrm  -lix -lsm -lgtest -lgtest_main -pthread
 AR       = ar -rc
 RANLIB   = ranlib
+LEX      = flex
+YACC     = bison
 
 BUILD_DIR   = build
 LIB_DIR     = $(BUILD_DIR)/lib
@@ -21,7 +23,7 @@ PF_SOURCES   = PF_PageHandle.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManag
 RM_SOURCES   = RM_RID.cpp RM_Manager.cpp RM_Record.cpp RM_FileHandle.cpp RM_FileScan.cpp
 IX_SOURCES   = IX_Manager.cpp IX_IndexHandle.cpp IX_BNodeWapper.cpp IX_IndexScan.cpp \
                IX_BBucketListWapper.cpp IX_BBucketWapper.cpp IX_BBucketIterator.cpp
-SM_SOURCES   = SM_Manager.cpp
+SM_SOURCES   = SM_Manager.cpp Parser.cpp Scan.cpp SM_NodeFactory.cpp
 TEST_SOURCES = PF_Test.cpp RM_Test.cpp IX_Test.cpp SM_Test.cpp
 SOURCES      = $(TOOL_SOURCES) $(PF_SOURCES) $(RM_SOURCES) $(TEST_SOURCES) $(IX_SOURCES) $(SM_SOURCES)
 
@@ -43,13 +45,24 @@ SM_LIB        = $(LIB_DIR)/libsm.a
 READBASE_LIBS = $(TOOL_LIB) $(PF_LIB) $(RM_LIB) $(IX_LIB) $(SM_LIB)
 
 # generate excutable file
-all: make_dirs $(TARGETS) $(TARGET_DIR)/redbaseTest
+all: make_dirs Scan.cpp $(TARGETS) $(TARGET_DIR)/redbaseTest
 
 $(TARGETS):  $(TARGET_DIR)/% : %.cpp $(READBASE_LIBS)
 	$(CC) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
 
 $(TARGET_DIR)/redbaseTest: $(OBJECTS) ${READBASE_LIBS}
 	$(CC) $(CPPFLAGS) $(TEST_OBJECTS) $(LDFLAGS) $(LIBS) -o $@
+
+# # bison & flex
+Parser.cpp: parser.y
+	$(YACC) -dy $<
+	mv y.tab.c Parser.cpp
+
+y.tab.h: Parser.cpp
+
+Scan.cpp: scan.l y.tab.h
+	$(LEX) $<
+	mv lex.yy.c Scan.cpp
 
 # generate library file
 $(TOOL_LIB): $(TOOL_OBJECTS)
@@ -89,7 +102,7 @@ $(OBJECTS): %.o:
 # phony target
 .PHONY: clean print run_test make_dirs
 clean:
-	rm -rf $(DIRS)
+	rm -rf $(DIRS) 
 print:
 	echo $(OBJECTS)
 run_test: $(TARGET_DIR)/redbaseTest $(TARGETS)

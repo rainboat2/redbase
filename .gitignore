@@ -1,2 +1,5 @@
 .vscode
 build
+parser.cpp
+Scan.cpp
+y.tab.h

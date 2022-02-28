@@ -1,20 +1,12 @@
-#include "pf.h"
-#include "PF_BufferManager.h"
-#include "PF_BufferStrategy.h"
+#include "parser.h"
 
-#include <unordered_map>
 #include <iostream>
 
-// struct BufferBlockDesc
-// {
-//     int fd;
-//     PageNum pageNum;
-//     char* data;
-//     short int pinCount;
-//     bool isDirty;
-// };
-
 int main(int argc, char* argv[]){
+    const char* query = "create table person(age int);";
+    Node* n = sqlParse(query);
+
+    std::cout << n << std::endl;
 
     return 0;
 }

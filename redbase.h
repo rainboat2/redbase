@@ -4,6 +4,7 @@
 #include <functional>
 
 #define MAX_STRING_LEN 255
+#define MAXNAME 31
 
 enum PageStatus : int {
     LIST_END = -1,

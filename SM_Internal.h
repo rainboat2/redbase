@@ -3,7 +3,6 @@
 
 #include "redbase.h"
 
-#define MAXNAME 31
 #define RELATION_TABLE_NAME "relcat"
 #define ATTRIBUTE_TABLE_NAME "attrcat"
 

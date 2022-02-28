@@ -29,6 +29,7 @@ public:
 
     RC GetSlotNum(SlotNum& slotNum) const;
 
+
 private:
     PageNum pageNum_;
     SlotNum slotNum_;

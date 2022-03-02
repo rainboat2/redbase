@@ -1,3 +1,5 @@
+%option noyywrap nounput noinput yylineno
+
 %{
 #include <stdio.h>
 #include <array>
@@ -21,15 +23,25 @@ char* getQuote(char* q, int len);
 void yyerror(char const *s);
 #endif
 
+#define YY_USER_ACTION                                            \
+  yylloc.first_line = yylloc.last_line;                           \
+  yylloc.first_column = yylloc.last_column;                       \
+  if (yylloc.last_line == yylineno)                               \
+    yylloc.last_column += yyleng;                                 \
+  else {                                                          \
+    yylloc.last_line = yylineno;                                  \
+    yylloc.last_column = yytext + yyleng - strrchr(yytext, '\n'); \
+  }
+
 YY_BUFFER_STATE bp = nullptr;
 %}
 
-%option noyywrap nounput noinput
 
 letter      [A-Za-z]
 digit       [0-9]
 num         {digit}+
 s_num       [+-]?{num}
+literalChar [\)\(,;]
 
 %%
 [ \n\t]                         {/* ignore */}
@@ -51,6 +63,8 @@ s_num       [+-]?{num}
                                 }
 \"([^\"\n]|(\"\"))*\n           { yyerror("error string!"); }
 {letter}({letter}|{digit}|_)*   { return getKeyword(yylval.str = yytext); }
+{literalChar}                   { return yytext[0];}
+.                               { yyerror("unkown token!");}
 %%
 
 char* makeString(char* s, int len){
@@ -82,7 +96,13 @@ int getKeyword(char* s){
     }
 
     str[len] = '\0';
-    static std::map<const char*, int> strToToken = {
+
+    struct StrLess {
+        bool operator()(const char* s1, const char* s2) const { 
+            return strncmp(s1, s2, MAX_STRING_LEN) < 0;
+        }
+    };
+    static std::map<const char*, int, StrLess> strToToken = {
         {"create", CREATE},
         {"table", TABLE},
         {"int", INT_T},

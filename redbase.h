@@ -61,6 +61,7 @@ enum class RC {
     SM_DB_OPENED,
     SM_DB_CLOSED,
     SM_UNIX,
+    SM_UNKOWN_NODE
 };
 
 void PrintError(RC rc);

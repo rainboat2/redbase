@@ -11,12 +11,46 @@ enum class NodeKind {
     ATTR_WITH_TYPE,
 };
 
+struct RelAttr{
+    char     *relName;    // Relation name (may be NULL)
+    char     *attrName;   // Attribute name
+
+    // Print function
+    friend std::ostream &operator<<(std::ostream &s, const RelAttr &ra);
+};
+
+struct AggRelAttr{
+    // AggFun   func; 
+    char     *relName;    // Relation name (may be NULL)
+    char     *attrName;   // Attribute name
+
+    // Print function
+};
+
+struct Value{
+    AttrType type;         /* type of value               */
+    void     *data;        /* value                       */
+			   /* print function              */
+};
+
+struct Condition{
+    RelAttr  lhsAttr;    /* left-hand side attribute            */
+    CompOp   op;         /* comparison operator                 */
+    int      bRhsIsAttr; /* TRUE if the rhs is an attribute,    */
+                         /* in which case rhsAttr below is valid;*/
+                         /* otherwise, rhsValue below is valid.  */
+    RelAttr  rhsAttr;    /* right-hand side attribute            */
+    Value    rhsValue;   /* right-hand side value                */
+			 /* print function                               */
+
+};
+
 struct Node {
     NodeKind kind;
     union {
         struct {
             char* relName;
-            Node* attrList;
+            Node* attrTypes;
         } createTable;
 
         struct {
@@ -28,7 +62,7 @@ struct Node {
             char* attrName;
             AttrType type;
             int length;
-        } attrWithType;
+        } attrType;
 
         struct {
             char* relName; // may be null

@@ -11,7 +11,7 @@ public:
 
 public:
     void resetMemory();
-    Node* tableNode(char* relName, Node* attrList);
+    Node* tableNode(char* relName, Node* attrTypes);
 
     Node* listNode(Node* value);
     Node* prepend(Node* list, Node* value);

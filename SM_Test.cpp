@@ -2,6 +2,7 @@
 #include "pf.h"
 #include "rm.h"
 #include "sm.h"
+#include "parser.h"
 
 #include <gtest/gtest.h>
 #include <stdlib.h>
@@ -102,4 +103,17 @@ TEST_F(SM_ManagerTest, SM_CREATE_DROP_INDEX_TEST)
 
     EXPECT_EQ(sm_manager_->CloseDb(), RC::SUCCESS);
     destoryDB();
+}
+
+class ParserTest: public testing::Test{
+protected:
+    const char* q1 = "create table person(age int);";
+    const char* q2 = "create table person(age int, name char(30));";
+};
+
+TEST_F(ParserTest, PARSER_TEST){
+    for (int i = 0; i < 1000; i++){
+        Node* n = sqlParse(q2);
+        EXPECT_NE(n, nullptr);
+    }
 }

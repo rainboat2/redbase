@@ -16,11 +16,11 @@ void SM_NodeFactory::resetMemory()
     nodeptr_ = 0;
 }
 
-Node* SM_NodeFactory::tableNode(char* relName, Node* attrList)
+Node* SM_NodeFactory::tableNode(char* relName, Node* attrTypes)
 {
     Node* n = makeNode(NodeKind::CREATE_TABLE);
     n->u.createTable.relName = relName;
-    n->u.createTable.attrList = attrList;
+    n->u.createTable.attrTypes = attrTypes;
     return n;
 }
 
@@ -52,8 +52,8 @@ Node* SM_NodeFactory::prepend(Node* list, Node* value){
 
 Node* SM_NodeFactory::attrWithTypeNode(char* attrName, AttrType attrType, int attrLength){
     Node* n = makeNode(NodeKind::ATTR_WITH_TYPE);
-    n->u.attrWithType.attrName = attrName;
-    n->u.attrWithType.type = attrType;
-    n->u.attrWithType.length = attrLength;
+    n->u.attrType.attrName = attrName;
+    n->u.attrType.type = attrType;
+    n->u.attrType.length = attrLength;
     return n;
 }

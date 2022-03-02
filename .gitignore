@@ -3,3 +3,4 @@ build
 parser.cpp
 Scan.cpp
 y.tab.h
+y.output

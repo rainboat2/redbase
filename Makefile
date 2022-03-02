@@ -5,7 +5,7 @@ LIBS     = -ltool -lpf -lrm  -lix -lsm -lgtest -lgtest_main -pthread
 AR       = ar -rc
 RANLIB   = ranlib
 LEX      = flex
-YACC     = bison
+YACC     = bison -dy -vt
 
 BUILD_DIR   = build
 LIB_DIR     = $(BUILD_DIR)/lib
@@ -55,7 +55,7 @@ $(TARGET_DIR)/redbaseTest: $(OBJECTS) ${READBASE_LIBS}
 
 # # bison & flex
 Parser.cpp: parser.y
-	$(YACC) -dy $<
+	$(YACC) $<
 	mv y.tab.c Parser.cpp
 
 y.tab.h: Parser.cpp
@@ -102,7 +102,7 @@ $(OBJECTS): %.o:
 # phony target
 .PHONY: clean print run_test make_dirs
 clean:
-	rm -rf $(DIRS) 
+	rm -rf $(DIRS) Parser.cpp Scan.cpp y.tab.h
 print:
 	echo $(OBJECTS)
 run_test: $(TARGET_DIR)/redbaseTest $(TARGETS)

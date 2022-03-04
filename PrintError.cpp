@@ -37,7 +37,16 @@ void PrintError(RC rc)
         { RC::RM_FILE_SCAN_CLOSED, "rm file scan already closed!" },
         { RC::RM_FILE_EOF, "reach the end of rm file!" },
         { RC::IX_INDEX_OPENED, "index handle already opened!" },
-        { RC::IX_INDEX_CLOSED, "index handle already closed!" }
+        { RC::IX_INDEX_CLOSED, "index handle already closed!" },
+        { RC::IX_INDEX_SCAN_OPENED, "index scan alread opened!" },
+        { RC::IX_INDEX_SCAN_CLOSED, "index scan alread closed!" },
+        { RC::IX_INDEX_SCAN_EOF, "reach the end of index scan!" },
+        { RC::SM_ATTR_NOT_FOUND, "attribute not found!" },
+        { RC::SM_INDEX_ARLEADY_EXIST, "index alread existed!" },
+        { RC::SM_DB_OPENED, "database alread opened!" },
+        { RC::SM_DB_CLOSED, "database alread closed!" },
+        { RC::SM_UNIX, "unix error!" },
+        { RC::SM_UNKOWN_NODE, "unkown parser node!" }
     };
     std::cerr << m[rc] << std::endl;
 }

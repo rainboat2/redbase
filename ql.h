@@ -12,7 +12,7 @@
 class QL_Manager {
 public:
     QL_Manager(SM_Manager& smm, IX_Manager& ixm, RM_Manager& rmm);
-    ~QL_Manager();
+    ~QL_Manager() = default;
 
     RC Select(int nSelAttrs,
         const RelAttr selAttrs[],
@@ -39,6 +39,11 @@ public:
         const Value& rhsValue,
         int nConditions,
         const Condition conditions[]);
+
+private:
+    SM_Manager& smm_;
+    IX_Manager& ixm_;
+    RM_Manager& rmm_;
 };
 
 #endif

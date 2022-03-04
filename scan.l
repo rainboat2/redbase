@@ -16,7 +16,7 @@
 char charPool[MAX_CHAR];
 int charPtr = 0;
 
-int getKeyword(char* s);
+int getKeyword(char* s, int len);
 char* getQuote(char* q, int len);
 
 #ifndef yyerror
@@ -62,9 +62,9 @@ literalChar [\)\(,;]
                                     return STRING;
                                 }
 \"([^\"\n]|(\"\"))*\n           { yyerror("error string!"); }
-{letter}({letter}|{digit}|_)*   { return getKeyword(yylval.str = yytext); }
-{literalChar}                   { return yytext[0];}
-.                               { yyerror("unkown token!");}
+{letter}({letter}|{digit}|_)*   { return getKeyword(yytext, yyleng); }
+{literalChar}                   { return yytext[0]; }
+.                               { yyerror("unkown token!"); }
 %%
 
 char* makeString(char* s, int len){
@@ -72,7 +72,10 @@ char* makeString(char* s, int len){
         std::cerr << "char pool out of memory" << std::endl;
         exit(1);
     }
+
     char* rs = charPool + charPtr;
+    strncpy(rs, s, len);
+    rs[len] = '\0';
     charPtr += (len + 1);
     return rs;
 }
@@ -82,19 +85,16 @@ char* getQuote(char* q, int len){
     return makeString(q + 1, len - 2);
 }
 
-int getKeyword(char* s){
+int getKeyword(char* s, int len){
     char str[MAX_STRING_LEN];
-    int len = 0;
-    while (len < MAX_STRING_LEN && s[len] != '\0'){
-        str[len] = tolower(s[len]);
-        len++;
-    }
 
     if (len == MAX_STRING_LEN){
         std::cerr << "keywords is too long" << std::endl;
         exit(1);
     }
-
+    for (int i = 0; i < len; i++){
+        str[i] = tolower(s[i]);
+    }
     str[len] = '\0';
 
     struct StrLess {
@@ -111,11 +111,11 @@ int getKeyword(char* s){
     };
     
     if (strToToken.find(str) == strToToken.end()){
-        yylval.str = makeString(s, len);
+        yylval.str = makeString(str, len);
+        std::cout << yylval.str << std::endl;
         return STRING;
     }else{
-        yylval.ival = strToToken[str];
-        return yylval.ival;
+        return strToToken[str];
     }
 }
 
@@ -128,4 +128,6 @@ void reset_scanner(const char* query){
     }
     bp = yy_scan_bytes(const_cast<char*>(query), strlen(query));
     yy_switch_to_buffer(bp);
+    yylloc.first_line = yylloc.last_line = 1;
+    yylloc.first_column = yylloc.last_column = 1;
 }

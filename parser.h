@@ -15,8 +15,6 @@ struct RelAttr{
     char     *relName;    // Relation name (may be NULL)
     char     *attrName;   // Attribute name
 
-    // Print function
-    friend std::ostream &operator<<(std::ostream &s, const RelAttr &ra);
 };
 
 struct AggRelAttr{

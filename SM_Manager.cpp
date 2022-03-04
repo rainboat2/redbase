@@ -15,19 +15,21 @@ SM_Manager::~SM_Manager()
     assert(!isOpen);
 }
 
-RC SM_Manager::OpenDb(const char* dbName){
+RC SM_Manager::OpenDb(const char* dbName)
+{
     if (isOpen)
         return RC::SM_DB_OPENED;
     if (chdir(dbName))
         return RC::SM_UNIX;
-    
+
     RETURN_RC_IF_NOT_SUCCESS(rmm_.OpenFile(RELATION_TABLE_NAME, relTable_));
     RETURN_RC_IF_NOT_SUCCESS(rmm_.OpenFile(ATTRIBUTE_TABLE_NAME, attrTable_));
     isOpen = true;
     return RC::SUCCESS;
 }
 
-RC SM_Manager::CloseDb(){
+RC SM_Manager::CloseDb()
+{
     if (!isOpen)
         return RC::SM_DB_CLOSED;
     RETURN_RC_IF_NOT_SUCCESS(rmm_.CloseFile(relTable_));

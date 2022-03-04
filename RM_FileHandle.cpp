@@ -150,6 +150,8 @@ RC RM_FileHandle::getFreeSlot(RID& rid)
     RM_PageHeader* pageHdr = (RM_PageHeader*)data;
     BitMapWapper bitmap(&pageHdr->bitmap, fileHeader_.recordNumsOfEachPage);
     SlotNum slotNum = bitmap.findFirstZero();
+    
+    assert(slotNum != -1);
     bitmap.set(slotNum, true);
     if (bitmap.all())
         MarkPageAsFull(page);

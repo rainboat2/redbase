@@ -6,12 +6,12 @@ It's a project of stanford class [CS346](https://web.stanford.edu/class/cs346/20
 
 ## Dependencies
 
-This project depend on googletest. you can install it by running the following command.
+This project depend on googletest and readline. you can install it by running the following command.
 
 ### macOS
 
 ```shell
-brew install googletest
+brew install googletest readline
 ```
 
 ## Build project

@@ -23,6 +23,8 @@ int main(int argc, char* argv[])
         std::cerr << strerror(errno) << std::endl;
         exit(1);
     }
+    char cur_path [1000];
+    getcwd(cur_path, 1000); 
 
     if (chdir(dbname)) {
         std::cerr << strerror(errno) << std::endl;
@@ -35,6 +37,7 @@ int main(int argc, char* argv[])
 
     EXIT_IF_NOT_SUCESSS(rm_manager.CreateFile(RELATION_TABLE_NAME, sizeof(Relcat)));
     EXIT_IF_NOT_SUCESSS(rm_manager.CreateFile(ATTRIBUTE_TABLE_NAME, sizeof(Attrcat)));
+    chdir(cur_path);
 
     SM_Manager sm_manager(ix_manager, rm_manager);
     EXIT_IF_NOT_SUCESSS(sm_manager.OpenDb(dbname));

@@ -20,10 +20,10 @@ RC SM_NodeInterpter::createTable(Node* n)
 {
     assert(n->kind == NodeKind::CREATE_TABLE);
     const char* relName = n->u.createTable.relName;
-    int cnt = listLen(n->u.createTable.attrTypes);
+    int cnt = listLen(n->u.createTable.attrWithTypes);
 
     auto* attrs = new AttrInfo[cnt];
-    Node* cur = n->u.createTable.attrTypes;
+    Node* cur = n->u.createTable.attrWithTypes;
     for (int i = 0; i < cnt; i++, cur = cur->u.list.next) {
         Node* val = cur->u.list.val;
 

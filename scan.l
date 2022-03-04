@@ -41,7 +41,7 @@ letter      [A-Za-z]
 digit       [0-9]
 num         {digit}+
 s_num       [+-]?{num}
-literalChar [\)\(,;]
+literalChar [\)\(,;=<>!]
 
 %%
 [ \n\t]                         {/* ignore */}
@@ -107,7 +107,10 @@ int getKeyword(char* s, int len){
         {"table", TABLE},
         {"int", INT_T},
         {"char", CHAR_T},
-        {"float", FLOAT_T}
+        {"float", FLOAT_T},
+        {"select", SELECT},
+        {"from", FROM},
+        {"where", WHERE}
     };
     
     if (strToToken.find(str) == strToToken.end()){

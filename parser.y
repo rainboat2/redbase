@@ -35,15 +35,17 @@ void reset_parser();
     Node* node;
 }
 
-%token  CREATE TABLE INT_T CHAR_T FLOAT_T
+%token  CREATE TABLE SELECT FROM WHERE INT_T CHAR_T FLOAT_T
 
 %token <str> STRING
 %token <ival> INT
 %token <fval> FLOAT
 
 
-%type <node> command ddl createStmt attr_with_type_list attr_with_type
-%type <str>  utility attrName
+%type <node> command ddl dml createStmt selectStmt attr_with_type_list attr_with_type where_clause_opt relAttrList
+             relList relAttr
+
+%type <str> attrName relName
 %type <attrType> attrType
 
 %%
@@ -56,22 +58,19 @@ start:
     ;
 
 command:
-    ddl{
-        $$ = $1;
-    }
-    |
-    utility{
-        
-    }
+    ddl
+    | dml
     ;
 
-utility:
-    STRING
-    ;
 
 ddl:
     createStmt
     ;
+
+dml:
+    selectStmt
+    ;
+
 
 createStmt:
     CREATE TABLE STRING '(' attr_with_type_list ')'
@@ -101,10 +100,6 @@ attr_with_type:
     }
     ;
 
-attrName:
-    STRING
-    ;
-
 attrType:
     INT_T {
         $$ = AttrType::RD_INT;
@@ -117,6 +112,68 @@ attrType:
     CHAR_T {
         $$ = AttrType::RD_STRING;
     }
+    ;
+
+selectStmt:
+    SELECT relAttrList FROM relList where_clause_opt{
+
+    }
+    ;
+
+where_clause_opt:
+    WHERE conditionList{
+
+    }
+    |
+    /* null */
+    {
+        $$ = nullptr;
+    }
+    ;
+
+relAttrList:
+    relAttr ',' relAttrList{
+        $$ = nodeFactory->prepend($3, $1);
+    }
+    |
+    relAttr{
+        $$ = nodeFactory->listNode($1);
+    }
+    ;
+
+relList:
+    relName ',' relList{
+        Node* rel = nodeFactory->relNode($1);
+        $$ = nodeFactory->prepend($3, rel);
+    }
+    |
+    relName{
+        Node* rel = nodeFactory->relNode($1);
+        $$ = nodeFactory->listNode(rel);
+    }
+    ;
+
+relAttr:
+    relName '.' attrName{
+        $$ = nodeFactory->relAttrNode($1, $3);
+    }
+    |
+    attrName{
+        $$ = nodeFactory->relAttrNode(nullptr, $1);
+    }
+    ;
+
+conditionList:
+    {
+    }
+    ;
+
+attrName:
+    STRING
+    ;
+
+relName:
+    STRING
     ;
 
 %%

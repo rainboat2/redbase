@@ -107,11 +107,11 @@ $(OBJECTS): %.o:
 	$(CC) $(CPPFLAGS) -c $< -o $@
 
 # phony target
-.PHONY: clean print run_test make_dirs
+.PHONY: clean count_line run_test make_dirs
 clean:
 	rm -rf $(DIRS) Parser.cpp Scan.cpp y.tab.h
-print:
-	echo $(OBJECTS)
+count_line:
+	 wc -l `ls *h *cpp Makefile parser.y scan.l | grep -v -E "Parser.cpp|Scan.cpp|y.tab.h"` | sort
 run_test: $(TARGET_DIR)/redbaseTest $(TARGETS)
 	$(TARGET_DIR)/redbaseTest $(cmd_args)
 make_dirs:

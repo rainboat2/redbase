@@ -11,9 +11,11 @@ public:
 
 public:
     void resetMemory();
-    Node* tableNode(char* relName, Node* attrTypes);
+    Node* tableNode(char* relName, Node* attrWithTypes);
 
     Node* listNode(Node* value);
+    Node* relAttrNode(char* relName, char* attrName);
+    Node* relNode(char* relName);
     Node* prepend(Node* list, Node* value);
     Node* attrWithTypeNode(char* attrName, AttrType attrType, int attrLength);
 

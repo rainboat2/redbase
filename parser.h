@@ -3,44 +3,43 @@
 
 #include "redbase.h"
 
-enum class NodeKind {
-    CREATE_TABLE,
-    LIST,
-    REL_ATTR,
-    ATTR_VAL,
-    ATTR_WITH_TYPE,
+struct RelAttr {
+    char* relName; // Relation name (may be NULL)
+    char* attrName; // Attribute name
 };
 
-struct RelAttr{
-    char     *relName;    // Relation name (may be NULL)
-    char     *attrName;   // Attribute name
-
-};
-
-struct AggRelAttr{
-    // AggFun   func; 
-    char     *relName;    // Relation name (may be NULL)
-    char     *attrName;   // Attribute name
+struct AggRelAttr {
+    // AggFun   func;
+    char* relName; // Relation name (may be NULL)
+    char* attrName; // Attribute name
 
     // Print function
 };
 
-struct Value{
-    AttrType type;         /* type of value               */
-    void     *data;        /* value                       */
-			   /* print function              */
+struct Value {
+    AttrType type; /* type of value               */
+    void* data; /* value                       */
+    /* print function              */
 };
 
-struct Condition{
-    RelAttr  lhsAttr;    /* left-hand side attribute            */
-    CompOp   op;         /* comparison operator                 */
-    int      bRhsIsAttr; /* TRUE if the rhs is an attribute,    */
-                         /* in which case rhsAttr below is valid;*/
-                         /* otherwise, rhsValue below is valid.  */
-    RelAttr  rhsAttr;    /* right-hand side attribute            */
-    Value    rhsValue;   /* right-hand side value                */
-			 /* print function                               */
+struct Condition {
+    RelAttr lhsAttr; /* left-hand side attribute            */
+    CompOp op; /* comparison operator                 */
+    int bRhsIsAttr; /* TRUE if the rhs is an attribute,    */
+    /* in which case rhsAttr below is valid;*/
+    /* otherwise, rhsValue below is valid.  */
+    RelAttr rhsAttr; /* right-hand side attribute            */
+    Value rhsValue; /* right-hand side value                */
+    /* print function                               */
+};
 
+enum class NodeKind {
+    CREATE_TABLE,
+    LIST,
+    RELATION,
+    REL_ATTR,
+    ATTR_VAL,
+    ATTR_WITH_TYPE,
 };
 
 struct Node {
@@ -48,8 +47,15 @@ struct Node {
     union {
         struct {
             char* relName;
-            Node* attrTypes;
+            Node* attrWithTypes;
         } createTable;
+
+        struct
+        {
+            Node* relAttrList;
+            Node* relList;
+            Node* conditionList;
+        } query;
 
         struct {
             Node* val;
@@ -67,12 +73,23 @@ struct Node {
             char* attrName;
         } relAttr;
 
+        struct{
+            char* relName;
+        } relation;
+
         struct {
-            char* attrName;
-            AttrType valType;
-            int varLength;
-            void* value;
-        } attrVal;
+            Node* lRelAttr;
+            CompOp op;
+            Node* rRelAttr;
+            Node* rValue;
+        } condition;
+
+        struct {
+            AttrType type;
+            int ival;
+            float fval;
+            char* str;
+        } value;
     } u;
 };
 

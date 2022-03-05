@@ -11,6 +11,8 @@ RC SM_NodeInterpter::interp(Node* n)
     switch (n->kind) {
     case NodeKind::CREATE_TABLE:
         return createTable(n);
+    case NodeKind::SELECT:
+        return select(n);
     default:
         return RC::SM_UNKOWN_NODE;
     }
@@ -36,6 +38,13 @@ RC SM_NodeInterpter::createTable(Node* n)
     delete[] attrs;
 
     return rc;
+}
+
+RC SM_NodeInterpter::select(Node* n)
+{
+    assert(n->kind == NodeKind::SELECT);
+    std::cout << n << std::endl;
+    return RC::SUCCESS;
 }
 
 int SM_NodeInterpter::listLen(Node* n)

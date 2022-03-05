@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
     extern int yydebug;
-    yydebug = 0;
+    yydebug = 1;
     PF_Manager pf;
     RM_Manager rm(pf);
     IX_Manager ix(pf);

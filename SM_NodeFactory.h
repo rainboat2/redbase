@@ -19,6 +19,14 @@ public:
     Node* prepend(Node* list, Node* value);
     Node* attrWithTypeNode(char* attrName, AttrType attrType, int attrLength);
 
+    Node* valueNode(int i);
+    Node* valueNode(float f);
+    Node* valueNode(char* str);
+
+    Node* conditionNode(Node* relAttr, CompOp op, Node* valueOrRelAttr);
+    Node* conditionTreeNode(Node* left, BoolOp op, Node* right);
+    Node* selectNode(Node* relAttrList, Node* relList, Node* condTree);
+
 private:
     SM_NodeFactory() = default;
     Node* makeNode(NodeKind kind);

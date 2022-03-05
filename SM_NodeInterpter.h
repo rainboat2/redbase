@@ -12,6 +12,7 @@ public:
 
 private:
     RC createTable(Node* n);
+    RC select(Node* n);
     int listLen(Node* n);
 
 private:

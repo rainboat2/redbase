@@ -41,7 +41,7 @@ letter      [A-Za-z]
 digit       [0-9]
 num         {digit}+
 s_num       [+-]?{num}
-literalChar [\)\(,;=<>!]
+literalChar [\)\(,;=<>!.]
 
 %%
 [ \n\t]                         {/* ignore */}
@@ -59,7 +59,7 @@ literalChar [\)\(,;=<>!]
                                 }
 \"([^\"\n]|(\"\"))*\"           {
                                     yylval.str = getQuote(yytext, yyleng);
-                                    return STRING;
+                                    return QUOTE_STRING;
                                 }
 \"([^\"\n]|(\"\"))*\n           { yyerror("error string!"); }
 {letter}({letter}|{digit}|_)*   { return getKeyword(yytext, yyleng); }
@@ -110,7 +110,9 @@ int getKeyword(char* s, int len){
         {"float", FLOAT_T},
         {"select", SELECT},
         {"from", FROM},
-        {"where", WHERE}
+        {"where", WHERE},
+        {"and", AND},
+        {"or", OR}
     };
     
     if (strToToken.find(str) == strToToken.end()){

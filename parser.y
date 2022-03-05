@@ -31,19 +31,21 @@ void reset_parser();
     int ival;
     float fval;
     AttrType attrType;
-    CompOp compOp;
+    CompOp cmp;
+    BoolOp bp;
     Node* node;
 }
 
-%token  CREATE TABLE SELECT FROM WHERE INT_T CHAR_T FLOAT_T
+%token  CREATE TABLE SELECT FROM WHERE INT_T CHAR_T FLOAT_T AND OR
 
-%token <str> STRING
+%token <str> STRING QUOTE_STRING
 %token <ival> INT
 %token <fval> FLOAT
 
-
+%type <cmp> compOp
+%type <bp> boolOp
 %type <node> command ddl dml createStmt selectStmt attr_with_type_list attr_with_type where_clause_opt relAttrList
-             relList relAttr
+             relList relAttr condition conditionTree value
 
 %type <str> attrName relName
 %type <attrType> attrType
@@ -116,13 +118,13 @@ attrType:
 
 selectStmt:
     SELECT relAttrList FROM relList where_clause_opt{
-
+        $$ = nodeFactory->selectNode($2, $4, $5);
     }
     ;
 
 where_clause_opt:
-    WHERE conditionList{
-
+    WHERE conditionTree{
+        $$ = $2;
     }
     |
     /* null */
@@ -130,6 +132,7 @@ where_clause_opt:
         $$ = nullptr;
     }
     ;
+
 
 relAttrList:
     relAttr ',' relAttrList{
@@ -163,8 +166,73 @@ relAttr:
     }
     ;
 
-conditionList:
-    {
+conditionTree:
+    condition boolOp conditionTree{
+        $$ = nodeFactory->conditionTreeNode($1, $2, $3);
+    }
+    |
+    condition{
+        $$ = $1;
+    }
+    ;
+
+condition:
+    relAttr compOp relAttr{
+        $$ = nodeFactory->conditionNode($1, $2, $3);
+    }
+    |
+    relAttr compOp value{
+        $$ = nodeFactory->conditionNode($1, $2, $3);
+    }
+    ;
+
+boolOp:
+    AND {
+        $$ = BoolOp::RD_AND;
+    }
+    |
+    OR {
+        $$ = BoolOp::RD_OR;
+    }
+    ;
+
+compOp:
+    '=' '=' {
+        $$ = CompOp::EQ;
+    }
+    |
+    '!' '=' {
+        $$ = CompOp::NE;
+    }
+    |
+    '>' '=' {
+        $$ = CompOp::GE;
+    }
+    |
+    '>' {
+        $$ = CompOp::GT;
+    }
+    |
+    '<' '=' {
+        $$ = CompOp::LE;
+    }
+    |
+    '<' {
+        $$ = CompOp::LT;
+    }
+    ;
+
+value:
+    INT {
+        $$ = nodeFactory->valueNode($1);
+    }
+    |
+    FLOAT {
+        $$ = nodeFactory->valueNode($1);
+    }
+    |
+    QUOTE_STRING {
+        $$ = nodeFactory->valueNode($1);
     }
     ;
 

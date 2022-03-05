@@ -3,6 +3,12 @@
 
 #include "redbase.h"
 
+enum class BoolOp {
+    RD_AND,
+    RD_OR,
+    RD_NOT
+};
+
 struct RelAttr {
     char* relName; // Relation name (may be NULL)
     char* attrName; // Attribute name
@@ -12,14 +18,11 @@ struct AggRelAttr {
     // AggFun   func;
     char* relName; // Relation name (may be NULL)
     char* attrName; // Attribute name
-
-    // Print function
 };
 
 struct Value {
     AttrType type; /* type of value               */
     void* data; /* value                       */
-    /* print function              */
 };
 
 struct Condition {
@@ -30,16 +33,19 @@ struct Condition {
     /* otherwise, rhsValue below is valid.  */
     RelAttr rhsAttr; /* right-hand side attribute            */
     Value rhsValue; /* right-hand side value                */
-    /* print function                               */
 };
 
 enum class NodeKind {
+    SELECT,
     CREATE_TABLE,
     LIST,
     RELATION,
     REL_ATTR,
     ATTR_VAL,
     ATTR_WITH_TYPE,
+    VALUE,
+    CONDITION,
+    CONDITION_TREE,
 };
 
 struct Node {
@@ -62,6 +68,19 @@ struct Node {
             Node* next;
         } list;
 
+        // leaf node of a condTree is condition node
+        struct {
+            BoolOp op;
+            Node* left;
+            Node* right;
+        } condTree;
+
+        struct {
+            Node* relAttrList;
+            Node* relList;
+            Node* condTree;
+        } select;
+
         struct {
             char* attrName;
             AttrType type;
@@ -73,15 +92,14 @@ struct Node {
             char* attrName;
         } relAttr;
 
-        struct{
+        struct {
             char* relName;
         } relation;
 
         struct {
             Node* lRelAttr;
             CompOp op;
-            Node* rRelAttr;
-            Node* rValue;
+            Node* rRelAttrOrValue;
         } condition;
 
         struct {

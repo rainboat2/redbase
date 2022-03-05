@@ -52,196 +52,177 @@ void reset_parser();
 
 %%
 
-start:
-    command ';'{
+start
+    : command ';'{
         parser_tree = $1;
         YYACCEPT;
     }
     ;
 
-command:
-    ddl
+command
+    : ddl
     | dml
     ;
 
 
-ddl:
-    createStmt
+ddl
+    : createStmt
     ;
 
-dml:
-    selectStmt
+dml
+    : selectStmt
     ;
 
 
-createStmt:
-    CREATE TABLE STRING '(' attr_with_type_list ')'
+createStmt
+    : CREATE TABLE STRING '(' attr_with_type_list ')'
     {
         $$ = nodeFactory->tableNode($3, $5);
     }
     ;
 
-attr_with_type_list:
-    attr_with_type ',' attr_with_type_list{
+attr_with_type_list
+    : attr_with_type ',' attr_with_type_list{
         $$ = nodeFactory->prepend($3, $1);
     }
-    |
-    attr_with_type
+    | attr_with_type
     {
         $$ = nodeFactory->listNode($1);
     }
     ;
 
-attr_with_type:
-    attrName attrType{
+attr_with_type
+    : attrName attrType{
         $$ = nodeFactory->attrWithTypeNode($1, $2, getTypeLen($2));
     }
-    |
-    attrName attrType '(' INT ')'{
+    | attrName attrType '(' INT ')'{
         $$ = nodeFactory->attrWithTypeNode($1, $2, $4);
     }
     ;
 
-attrType:
-    INT_T {
+attrType
+    : INT_T {
         $$ = AttrType::RD_INT;
     }
-    |
-    FLOAT_T {
+    | FLOAT_T {
         $$ = AttrType::RD_FLOAT;
     }
-    |
-    CHAR_T {
+    | CHAR_T {
         $$ = AttrType::RD_STRING;
     }
     ;
 
-selectStmt:
-    SELECT relAttrList FROM relList where_clause_opt{
+selectStmt
+    : SELECT relAttrList FROM relList where_clause_opt{
         $$ = nodeFactory->selectNode($2, $4, $5);
     }
     ;
 
-where_clause_opt:
-    WHERE conditionTree{
+where_clause_opt
+    : WHERE conditionTree{
         $$ = $2;
     }
-    |
-    /* null */
+    | /* null */
     {
         $$ = nullptr;
     }
     ;
 
-
-relAttrList:
-    relAttr ',' relAttrList{
+relAttrList
+    : relAttr ',' relAttrList{
         $$ = nodeFactory->prepend($3, $1);
     }
-    |
-    relAttr{
+    | relAttr{
         $$ = nodeFactory->listNode($1);
     }
     ;
 
-relList:
-    relName ',' relList{
+relList
+    : relName ',' relList{
         Node* rel = nodeFactory->relNode($1);
         $$ = nodeFactory->prepend($3, rel);
     }
-    |
-    relName{
+    | relName{
         Node* rel = nodeFactory->relNode($1);
         $$ = nodeFactory->listNode(rel);
     }
     ;
 
-relAttr:
-    relName '.' attrName{
+relAttr
+    : relName '.' attrName{
         $$ = nodeFactory->relAttrNode($1, $3);
     }
-    |
-    attrName{
+    | attrName{
         $$ = nodeFactory->relAttrNode(nullptr, $1);
     }
     ;
 
-conditionTree:
-    condition boolOp conditionTree{
+conditionTree
+    : condition boolOp conditionTree{
         $$ = nodeFactory->conditionTreeNode($1, $2, $3);
     }
-    |
-    condition{
+    | condition{
         $$ = $1;
     }
     ;
 
-condition:
-    relAttr compOp relAttr{
+condition
+    : relAttr compOp relAttr{
         $$ = nodeFactory->conditionNode($1, $2, $3);
     }
-    |
-    relAttr compOp value{
+    | relAttr compOp value{
         $$ = nodeFactory->conditionNode($1, $2, $3);
     }
     ;
 
-boolOp:
-    AND {
+boolOp
+    : AND {
         $$ = BoolOp::RD_AND;
     }
-    |
-    OR {
+    | OR {
         $$ = BoolOp::RD_OR;
     }
     ;
 
-compOp:
-    '=' '=' {
+compOp
+    : '=' '=' {
         $$ = CompOp::EQ;
     }
-    |
-    '!' '=' {
+    | '!' '=' {
         $$ = CompOp::NE;
     }
-    |
-    '>' '=' {
+    | '>' '=' {
         $$ = CompOp::GE;
     }
-    |
-    '>' {
+    | '>' {
         $$ = CompOp::GT;
     }
-    |
-    '<' '=' {
+    | '<' '=' {
         $$ = CompOp::LE;
     }
-    |
-    '<' {
+    | '<' {
         $$ = CompOp::LT;
     }
     ;
 
-value:
-    INT {
+value
+    : INT {
         $$ = nodeFactory->valueNode($1);
     }
-    |
-    FLOAT {
+    | FLOAT {
         $$ = nodeFactory->valueNode($1);
     }
-    |
-    QUOTE_STRING {
+    | QUOTE_STRING {
         $$ = nodeFactory->valueNode($1);
     }
     ;
 
-attrName:
-    STRING
+attrName
+    : STRING
     ;
 
-relName:
-    STRING
+relName
+    : STRING
     ;
 
 %%

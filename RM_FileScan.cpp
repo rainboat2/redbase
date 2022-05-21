@@ -1,4 +1,5 @@
 #include "rm.h"
+#include <cassert>
 
 RM_FileScan::RM_FileScan()
     : fileHandle_(nullptr)

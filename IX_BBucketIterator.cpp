@@ -1,4 +1,5 @@
 #include "ix.h"
+#include <cassert>
 
 IX_BBucketIterator::IX_BBucketIterator()
     : indexHandle_(nullptr)

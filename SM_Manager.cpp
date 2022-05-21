@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <unistd.h>
+#include <cassert>
 
 SM_Manager::SM_Manager(IX_Manager& ixm, RM_Manager& rmm)
     : ixm_(ixm)

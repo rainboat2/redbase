@@ -1,4 +1,5 @@
 #include "ix.h"
+#include <cassert>
 
 IX_IndexScan::IX_IndexScan()
     : indexHandle_(nullptr)

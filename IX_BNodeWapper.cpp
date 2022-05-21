@@ -1,4 +1,5 @@
 #include "IX_Internal.h"
+#include <assert.h>
 
 IX_BNodeWapper::IX_BNodeWapper()
     : addr_(NULL_RID)

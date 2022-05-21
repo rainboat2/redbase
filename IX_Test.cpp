@@ -19,7 +19,7 @@ TEST_F(IX_BNodeWapperTest, INDEX_OF_TEST)
     std::array<int, 5> arr { 1, 2, 2, 4, 8 };
     *((int*)buffer) = arr.size();
     int* attr = (int*)buffer + 1;
-    for (int i = 0; i < arr.size(); i++) {
+    for (size_t i = 0; i < arr.size(); i++) {
         attr[i] = arr[i];
     }
     IX_BNodeWapper node(sizeof(int), AttrType::RD_INT, buffer, { -1, -1 });
@@ -48,13 +48,13 @@ TEST_F(IX_BNodeWapperTest, LEAF_INSERT_TEST)
     IX_BNodeWapper node(sizeof(int), AttrType::RD_INT, buffer, { -1, -1 });
     EXPECT_EQ(0, node.size());
     std::array<int, 340> seq;
-    for (int i = 0; i < seq.size(); i++)
+    for (size_t i = 0; i < seq.size(); i++)
         seq[i] = i;
     std::reverse(seq.begin(), seq.end());
-    for (int i = 0; i < seq.size(); i++)
+    for (size_t i = 0; i < seq.size(); i++)
         node.leafInsert(&seq[i], { seq[i], seq[i] });
 
-    for (int i = 0; i < seq.size(); i++) {
+    for (size_t i = 0; i < seq.size(); i++) {
         RID rid = node.getRid(i);
         void* attr = node.getAttr(i);
         PageNum pageNum;

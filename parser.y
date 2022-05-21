@@ -20,7 +20,7 @@ void yyerror(char const *s);
 int yylex();
 #endif
 
-#define YYDEBUG 1
+// #define YYDEBUG 1
 
 void reset_scanner(const char* query);
 void reset_parser();

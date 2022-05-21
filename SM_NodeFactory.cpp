@@ -1,4 +1,5 @@
 #include "SM_NodeFactory.h"
+#include <cassert>
 
 #include <iostream>
 

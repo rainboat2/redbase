@@ -50,11 +50,11 @@ TEST_F(LRUTest, LRU_POP_TEST)
 {
     pushAllKeys();
     EXPECT_EQ(LRU_->pop(), keys[0]);
-    for (int i = 1; i < keys.size() - 1; i++) {
+    for (size_t i = 1; i < keys.size() - 1; i++) {
         LRU_->visit(keys[i]);
     }
     EXPECT_EQ(LRU_->pop(), keys.back());
-    for (int i = 2; i < keys.size() - 1; i++) {
+    for (size_t i = 2; i < keys.size() - 1; i++) {
         LRU_->visit(keys[i]);
     }
     EXPECT_EQ(LRU_->pop(), keys[1]);
@@ -249,7 +249,7 @@ TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST)
             EXPECT_EQ(RC::SUCCESS, handle_.GetNextPage(pageNum, pageHandle));
             pageHandle.GetPageNum(pageNum);
             pageHandle.GetData(data);
-            for (int j = 0; j < PF_PAGE_SIZE; j++)
+            for (unsigned long j = 0; j < PF_PAGE_SIZE; j++)
                 EXPECT_EQ(i, data[j]);
         }
         EXPECT_EQ(RC::PF_EOF, handle_.GetNextPage(pageNum, pageHandle));
@@ -269,7 +269,7 @@ TEST_F(PF_FileHandleTest, PAGE_READ_WRITE_TEST)
             EXPECT_EQ(RC::SUCCESS, handle_.GetPrevPage(pageNum, pageHandle));
             pageHandle.GetPageNum(pageNum);
             pageHandle.GetData(data);
-            for (int j = 0; j < PF_PAGE_SIZE; j++)
+            for (unsigned long j = 0; j < PF_PAGE_SIZE; j++)
                 EXPECT_EQ(i, data[j]);
         }
     }

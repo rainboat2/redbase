@@ -1,5 +1,7 @@
 #include "redbase.h"
 
+#include <string.h>
+
 int int_cmp(const void* d1, const void* d2)
 {
     int v1 = *((int*)d1), v2 = *((int*)d2);

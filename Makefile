@@ -1,7 +1,7 @@
 CC       = g++
 CPPFLAGS = -std=c++14 -g -Wall
 LDFLAGS  = -L $(LIB_DIR)
-LIBS     = -ltool -lpf -lrm  -lix -lsm -lql -lgtest -lgtest_main -lreadline -pthread
+LIBS     = -lql -lsm -lix -lrm -lpf -ltool -lreadline -pthread
 AR       = ar -rc
 RANLIB   = ranlib
 LEX      = flex
@@ -18,12 +18,12 @@ UTILITES = redbase.cpp dbcreate.cpp dbdestroy.cpp
 TARGETS  = $(addprefix $(TARGET_DIR)/, $(UTILITES:.cpp=))
 
 # sources
-TOOL_SOURCES = RedbaseComparator.cpp PrintError.cpp BitMapWapper.cpp Parser.cpp Scan.cpp
+TOOL_SOURCES = RedbaseComparator.cpp PrintError.cpp BitMapWapper.cpp 
 PF_SOURCES   = PF_PageHandle.cpp PF_FileHandle.cpp PF_Manager.cpp PF_BufferManager.cpp
 RM_SOURCES   = RM_RID.cpp RM_Manager.cpp RM_Record.cpp RM_FileHandle.cpp RM_FileScan.cpp
 IX_SOURCES   = IX_Manager.cpp IX_IndexHandle.cpp IX_BNodeWapper.cpp IX_IndexScan.cpp \
                IX_BBucketListWapper.cpp IX_BBucketWapper.cpp IX_BBucketIterator.cpp
-SM_SOURCES   = SM_Manager.cpp SM_NodeFactory.cpp SM_NodeInterpter.cpp
+SM_SOURCES   = SM_Manager.cpp SM_NodeFactory.cpp SM_NodeInterpter.cpp Parser.cpp Scan.cpp
 QL_SOURCES   = QL_Manager.cpp
 TEST_SOURCES = PF_Test.cpp RM_Test.cpp IX_Test.cpp SM_Test.cpp
 SOURCES      = $(TOOL_SOURCES) $(PF_SOURCES) $(RM_SOURCES) $(TEST_SOURCES) $(IX_SOURCES) $(SM_SOURCES) $(QL_SOURCES)
@@ -38,7 +38,7 @@ QL_OBJECTS   = $(addprefix $(OBJECTS_DIR)/, $(QL_SOURCES:cpp=o))
 TEST_OBJECTS = $(addprefix ${OBJECTS_DIR}/, ${TEST_SOURCES:cpp=o})
 OBJECTS      = $(addprefix $(OBJECTS_DIR)/, $(SOURCES:.cpp=.o))
 
-#libs
+# libs
 TOOL_LIB      = $(LIB_DIR)/libtool.a
 PF_LIB        = $(LIB_DIR)/libpf.a
 RM_LIB        = $(LIB_DIR)/librm.a
@@ -51,12 +51,12 @@ READBASE_LIBS = $(TOOL_LIB) $(PF_LIB) $(RM_LIB) $(IX_LIB) $(SM_LIB) $(QL_LIB)
 all: make_dirs Scan.cpp $(TARGETS) $(TARGET_DIR)/redbaseTest
 
 $(TARGETS):  $(TARGET_DIR)/% : %.cpp $(READBASE_LIBS)
-	$(CC) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $< -o $@
+	$(CC) $(CPPFLAGS) $< $(LDFLAGS) $(LIBS) -o $@
 
 $(TARGET_DIR)/redbaseTest: $(OBJECTS) ${READBASE_LIBS}
-	$(CC) $(CPPFLAGS) $(TEST_OBJECTS) $(LDFLAGS) $(LIBS) -o $@
+	$(CC) $(CPPFLAGS) $(TEST_OBJECTS) $(LDFLAGS) -lgtest -lgtest_main $(LIBS) -o $@
 
-# # bison & flex
+# bison & flex
 Parser.cpp: parser.y
 	$(YACC) $<
 	mv y.tab.c Parser.cpp

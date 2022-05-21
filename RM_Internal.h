@@ -22,7 +22,7 @@ struct RM_PageHeader {
     int nextFree;
     char bitmap;
 
-    static inline int size(int recordNums) { return sizeof(int) + BitMapWapper::memorySize(recordNums); }
+    static inline size_t size(int recordNums) { return sizeof(int) + BitMapWapper::memorySize(recordNums); }
 };
 
 #endif

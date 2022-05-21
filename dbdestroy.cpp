@@ -37,7 +37,7 @@ int remove_dir(const char* path)
         while ((dp = readdir(dir)) != NULL) {
             if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0)
                 continue;
-            char dir_path[255];
+            char dir_path[512];
             sprintf(dir_path, "%s/%s", path, dp->d_name);
             remove_dir(dir_path);
         }

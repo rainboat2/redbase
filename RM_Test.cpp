@@ -75,7 +75,7 @@ TEST_F(BitMapWapperTest, BITMAP_CREATE_GET_TEST)
     char buf2[4];
     memcpy(buf2, buf1, 4);
     BitMapWapper b2(buf2, b1.size());
-    for (int i = 0; i < b1.size(); i++) {
+    for (size_t i = 0; i < b1.size(); i++) {
         EXPECT_EQ(b1.get(i), b2.get(i));
     }
 }
@@ -227,14 +227,14 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_DELETE_TEST)
 {
     std::array<RID, 3000> rids;
     // insert
-    for (int i = 0; i < rids.size(); i++) {
+    for (size_t i = 0; i < rids.size(); i++) {
         memset(data_, i, record_size_);
         EXPECT_EQ(RC::SUCCESS, fileHandle_.InsertRec(data_, rids[i]));
     }
 
     std::vector<bool> marked(rids.size());
     std::vector<RID> deleted;
-    for (int i = 0; i < rids.size(); i++) {
+    for (size_t i = 0; i < rids.size(); i++) {
         PageNum pageNum;
         rids[i].GetPageNum(pageNum);
         if (!marked[pageNum]) {
@@ -243,11 +243,11 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_DELETE_TEST)
         }
     }
 
-    for (int i = deleted.size() - 1; i >= 0; i--) {
+    for (size_t i = deleted.size() - 1; i >= 0; i--) {
         EXPECT_EQ(RC::SUCCESS, fileHandle_.DeleteRec(deleted[i]));
     }
 
-    for (int i = 0; i < deleted.size(); i++) {
+    for (size_t i = 0; i < deleted.size(); i++) {
         RID rid;
         fileHandle_.InsertRec(data_, rid);
         EXPECT_EQ(rid, deleted[i]);
@@ -257,7 +257,7 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_DELETE_TEST)
 TEST_F(RM_FileHandleTest, RM_FILEHANDLE_GET_NEXT_TEST)
 {
     std::array<RID, 400> rids;
-    for (int i = 0; i < rids.size(); i++) {
+    for (size_t i = 0; i < rids.size(); i++) {
         memset(data_, i, record_size_);
         EXPECT_EQ(RC::SUCCESS, fileHandle_.InsertRec(data_, rids[i]));
     }
@@ -271,7 +271,7 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_GET_NEXT_TEST)
     }
 
     RID cur(1, -1);
-    for (int i = 0; i < rids.size(); i++) {
+    for (size_t i = 0; i < rids.size(); i++) {
         if (deleted.find(i) != deleted.end())
             continue;
         RM_Record rec;

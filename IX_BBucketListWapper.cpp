@@ -1,4 +1,5 @@
 #include "IX_Internal.h"
+#include <cassert>
 
 IX_BBucketListWapper::IX_BBucketListWapper(int bucketItemNum, char* data, PageNum pageNum)
     : bucketItemNum_(bucketItemNum)

@@ -1,4 +1,5 @@
 #include "ix.h"
+#include <cassert>
 
 IX_IndexHandle::IX_IndexHandle()
     : isOpen_(false)

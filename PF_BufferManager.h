@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 // use (fd, pageNum) to identifiy a buffer block
 struct BufferKey {

@@ -1,4 +1,5 @@
 #include "SM_NodeInterpter.h"
+#include <cassert>
 
 SM_NodeInterpter::SM_NodeInterpter(SM_Manager& sm, QL_Manager& ql)
     : sm_(sm)

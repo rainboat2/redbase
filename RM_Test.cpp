@@ -159,6 +159,8 @@ class RM_FileHandleTest : public testing::Test {
 protected:
     void SetUp() override
     {
+        if (access(TEST_FILE_, F_OK) == 0)
+            unlink(TEST_FILE_);
         pf_manager_ = new PF_Manager;
         rm_manager_ = new RM_Manager(*pf_manager_);
         rm_manager_->CreateFile(TEST_FILE_, record_size_);
@@ -197,7 +199,7 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_INSERT_AND_UPDATE_TEST)
         memset(data_, i, record_size_);
         RM_Record rec;
         EXPECT_EQ(RC::SUCCESS, fileHandle_.GetRec(rids[i], rec));
-        char* data;
+        char* data = nullptr;
         rec.GetData(data);
         EXPECT_EQ(0, memcmp(data, data_, record_size_));
     }
@@ -243,8 +245,8 @@ TEST_F(RM_FileHandleTest, RM_FILEHANDLE_DELETE_TEST)
         }
     }
 
-    for (size_t i = deleted.size() - 1; i >= 0; i--) {
-        EXPECT_EQ(RC::SUCCESS, fileHandle_.DeleteRec(deleted[i]));
+    for (auto it = deleted.rbegin(); it != deleted.rend(); it++){
+        EXPECT_EQ(RC::SUCCESS, fileHandle_.DeleteRec(*it));
     }
 
     for (size_t i = 0; i < deleted.size(); i++) {

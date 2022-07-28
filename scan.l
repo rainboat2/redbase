@@ -117,7 +117,6 @@ int getKeyword(char* s, int len){
     
     if (strToToken.find(str) == strToToken.end()){
         yylval.str = makeString(str, len);
-        std::cout << yylval.str << std::endl;
         return STRING;
     }else{
         return strToToken[str];

@@ -112,7 +112,7 @@ protected:
 };
 
 TEST_F(ParserTest, PARSER_TEST){
-    for (int i = 0; i < 1000; i++){
+    for (int i = 0; i < 2; i++){
         Node* n = sqlParse(q2);
         EXPECT_NE(n, nullptr);
     }

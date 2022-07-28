@@ -90,7 +90,8 @@ TEST_F(PF_ManagerTest, PF_MANAGER_FILE_MANAGER)
     if (rc != RC::SUCCESS)
         PrintError(rc);
     EXPECT_EQ(rc, RC::SUCCESS);
-    EXPECT_EQ(0, access(TEST_FILE_, AT_EACCESS));
+
+    EXPECT_EQ(0, access(TEST_FILE_, F_OK));
 
     PF_FileHandle handle;
     EXPECT_EQ(RC::SUCCESS, manager_.OpenFile(TEST_FILE_, handle));
@@ -100,7 +101,7 @@ TEST_F(PF_ManagerTest, PF_MANAGER_FILE_MANAGER)
     if (rc != RC::SUCCESS)
         PrintError(rc);
     EXPECT_EQ(rc, RC::SUCCESS);
-    EXPECT_EQ(-1, access(TEST_FILE_, AT_EACCESS));
+    EXPECT_EQ(-1, access(TEST_FILE_, F_OK));
 }
 
 TEST_F(PF_ManagerTest, PF_MANAGER_BLOCK)
